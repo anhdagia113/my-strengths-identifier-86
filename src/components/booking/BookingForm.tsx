@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -22,13 +22,14 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { CalendarIcon, Clock } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { BookingData } from "@/pages/Booking";
 
 const formSchema = z.object({
   service: z.string().min(1, "Vui lòng chọn dịch vụ"),
@@ -42,10 +43,11 @@ const formSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
 });
 
+// Define services with prices
 const SERVICES = [
-  { id: "1", name: "Chăm sóc da cơ bản" },
-  { id: "2", name: "Trị mụn chuyên sâu" },
-  { id: "3", name: "Trẻ hóa da" },
+  { id: "1", name: "Chăm sóc da cơ bản", price: 450000 },
+  { id: "2", name: "Trị mụn chuyên sâu", price: 650000 },
+  { id: "3", name: "Trẻ hóa da", price: 850000 },
 ];
 
 const SPECIALISTS = [
@@ -59,14 +61,46 @@ const TIME_SLOTS = [
   "14:00", "15:00", "16:00", "17:00"
 ];
 
-const BookingForm = () => {
+interface BookingFormProps {
+  onFormUpdate: (data: BookingData) => void;
+  onBookingComplete: () => void;
+}
+
+const BookingForm = ({ onFormUpdate, onBookingComplete }: BookingFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      email: "",
+    }
   });
+
+  // Update parent component when form values change
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      const serviceId = value.service;
+      const specialistId = value.specialist;
+
+      const bookingData: BookingData = {
+        service: serviceId ? SERVICES.find(s => s.id === serviceId) : undefined,
+        specialist: specialistId ? SPECIALISTS.find(s => s.id === specialistId) : undefined,
+        date: value.date,
+        time: value.time,
+        customerName: value.name,
+        customerPhone: value.phone,
+        customerEmail: value.email,
+      };
+
+      onFormUpdate(bookingData);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form.watch, onFormUpdate]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
-    // Handle form submission
+    onBookingComplete();
   };
 
   return (
@@ -87,7 +121,7 @@ const BookingForm = () => {
                 <SelectContent>
                   {SERVICES.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
-                      {service.name}
+                      {service.name} - {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(service.price)}
                     </SelectItem>
                   ))}
                 </SelectContent>
