@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -32,11 +31,15 @@ type LoginValues = z.infer<typeof loginSchema>;
 const initFacebookSDK = () => {
   if (window.FB) return Promise.resolve();
   
-  return new Promise<void>((resolve) => {
-    // Load the Facebook SDK asynchronously
+  return new Promise<void>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error("Facebook SDK loading timeout"));
+    }, 10000);
+    
     window.fbAsyncInit = function() {
+      clearTimeout(timeoutId);
       window.FB.init({
-        appId: '1234567890', // Replace with your Facebook App ID
+        appId: '1343611270219538',
         cookie: true,
         xfbml: true,
         version: 'v18.0'
@@ -44,31 +47,146 @@ const initFacebookSDK = () => {
       resolve();
     };
 
-    // Load the SDK asynchronously
     (function(d, s, id) {
       const fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
       const js = d.createElement(s) as HTMLScriptElement;
       js.id = id;
       js.src = "https://connect.facebook.net/en_US/sdk.js";
+      js.onerror = () => {
+        clearTimeout(timeoutId);
+        reject(new Error("Failed to load Facebook SDK"));
+      };
       fjs.parentNode?.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
+  });
+};
+
+// Google OAuth initialization - Improved with better error handling
+const loadGoogleScript = () => {
+  return new Promise<void>((resolve, reject) => {
+    // Check if script already exists
+    if (document.getElementById('google-login-sdk')) {
+      return resolve();
+    }
+    
+    const script = document.createElement('script');
+    script.id = 'google-login-sdk';
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => resolve();
+    script.onerror = (error) => reject(new Error(`Google SDK failed to load: ${error}`));
+    document.head.appendChild(script);
   });
 };
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [facebookSDKLoaded, setFacebookSDKLoaded] = useState(false);
+  const [facebookSDKError, setFacebookSDKError] = useState<string | null>(null);
+  const [googleSDKLoaded, setGoogleSDKLoaded] = useState(false);
+  const [googleSDKError, setGoogleSDKError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Initialize Facebook SDK
-    initFacebookSDK().then(() => {
-      setFacebookSDKLoaded(true);
-    }).catch(error => {
-      console.error("Error initializing Facebook SDK:", error);
-    });
+    // Facebook SDK initialization
+    initFacebookSDK()
+      .then(() => {
+        setFacebookSDKLoaded(true);
+        console.log("Facebook SDK initialized successfully");
+      })
+      .catch(error => {
+        console.error("Error initializing Facebook SDK:", error);
+        setFacebookSDKError(error.message);
+        toast.error("Không thể kết nối với Facebook. Vui lòng thử lại sau.");
+      });
+      
+    // Google SDK initialization
+    loadGoogleScript()
+      .then(() => {
+        // Allow some time for the script to be properly loaded
+        setTimeout(() => {
+          if (!window.google || !window.google.accounts) {
+            throw new Error("Google accounts API not loaded properly");
+          }
+          
+          try {
+            window.google.accounts.id.initialize({
+              client_id: "916301161950-tr0d4f9agfj206e7rvcs3stsltrt4oni.apps.googleusercontent.com", // Thay thế bằng Client ID của bạn
+              callback: handleGoogleCallback,
+              auto_select: false,
+              cancel_on_tap_outside: true,
+              context: 'signin', // Có thể là 'signin', 'signup', hoặc 'use'
+              ux_mode: 'popup', // 'popup' hoặc 'redirect'
+            });
+            setGoogleSDKLoaded(true);
+            console.log("Google SDK initialized successfully");
+          } catch (initError) {
+            console.error("Error during Google SDK initialization:", initError);
+            setGoogleSDKError(String(initError));
+            toast.error("Lỗi khi khởi tạo Google SDK. Vui lòng thử lại sau.");
+          }
+        }, 500);
+      })
+      .catch(error => {
+        console.error("Error loading Google SDK:", error);
+        setGoogleSDKError(error.message);
+        toast.error("Không thể tải Google SDK. Vui lòng thử lại sau.");
+      });
+      
+    // Cleanup function to prevent memory leaks
+    return () => {
+      // Any cleanup needed for SDKs
+    };
   }, []);
+
+  const handleGoogleCallback = (response: any) => {
+    try {
+      console.log("Google response:", response);
+      
+      if (!response || !response.credential) {
+        toast.error("Không nhận được thông tin xác thực từ Google");
+        return;
+      }
+
+      setIsLoading(true);
+      
+      // Decode the JWT token
+      const base64Url = response.credential.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      const { email, name, picture, sub } = JSON.parse(jsonPayload);
+      
+      console.log('Google login successful', { email, name });
+      
+      // Store user data
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("user", JSON.stringify({ 
+        email,
+        name,
+        provider: "google",
+        googleId: sub,
+        picture,
+        role: "user"
+      }));
+      
+      setIsLoading(false);
+      toast.success("Đăng nhập Google thành công!");
+      
+      // Navigate to home page
+      setTimeout(() => {
+        navigate("/");
+      }, 100);
+    } catch (error) {
+      console.error("Error processing Google login:", error);
+      setIsLoading(false);
+      toast.error("Đã xảy ra lỗi khi xử lý đăng nhập Google.");
+    }
+  };
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -81,19 +199,19 @@ const Login = () => {
   const onSubmit = (values: LoginValues) => {
     setIsLoading(true);
 
-    // Mock login simulation - In a real app, replace with actual API call
+    // Mock login simulation - Replace with actual API call
     setTimeout(() => {
       console.log("Login submitted:", values);
-      setIsLoading(false);
       
-      if (values.email === "demo@example.com" && values.password === "password123") {
-        toast.success("Đăng nhập thành công!");
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("user", JSON.stringify({ email: values.email, role: "user" }));
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("user", JSON.stringify({ email: values.email, role: "user" }));
+      
+      setIsLoading(false);
+      toast.success("Đăng nhập thành công!");
+      
+      setTimeout(() => {
         navigate("/");
-      } else {
-        toast.error("Email hoặc mật khẩu không đúng");
-      }
+      }, 100);
     }, 1000);
   };
 
@@ -108,10 +226,10 @@ const Login = () => {
     
     window.FB.login((response) => {
       if (response.authResponse) {
-        // Get user information from Facebook
         window.FB.api('/me', { fields: 'name,email' }, (userInfo) => {
           console.log('Facebook login successful', userInfo);
           toast.success("Đăng nhập Facebook thành công!");
+          
           localStorage.setItem("isLoggedIn", "true");
           localStorage.setItem("user", JSON.stringify({ 
             email: userInfo.email || `${userInfo.id}@facebook.com`, 
@@ -120,8 +238,12 @@ const Login = () => {
             facebookId: userInfo.id,
             role: "user"
           }));
+          
           setIsLoading(false);
-          navigate("/");
+          
+          setTimeout(() => {
+            navigate("/");
+          }, 100);
         });
       } else {
         console.log('Facebook login cancelled');
@@ -132,14 +254,29 @@ const Login = () => {
   };
 
   const handleGmailLogin = () => {
-    setIsLoading(true);
-    
-    // Mock Gmail login - In a real app, replace with Google OAuth
-    setTimeout(() => {
-      console.log(`Login with Gmail`);
-      setIsLoading(false);
-      toast.error("Đăng nhập Gmail chưa được tích hợp");
-    }, 1000);
+    try {
+      if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+        toast.error("Google SDK chưa được tải hoặc khởi tạo");
+        return;
+      }
+      
+      // For debugging
+      console.log("Triggering Google sign-in prompt");
+      
+      // Render a custom Google button
+      window.google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          console.log("Google sign-in prompt not displayed:", notification.getNotDisplayedReason() || notification.getSkippedReason());
+          // Fallback to standard prompt
+          toast.error("Không thể hiển thị cửa sổ đăng nhập Google. Vui lòng thử lại sau.");
+        } else {
+          console.log("Google sign-in prompt displayed");
+        }
+      });
+    } catch (error) {
+      console.error("Error displaying Google sign-in:", error);
+      toast.error("Đã xảy ra lỗi khi hiển thị đăng nhập Google");
+    }
   };
 
   return (
@@ -157,7 +294,7 @@ const Login = () => {
                 variant="outline" 
                 className="w-full" 
                 onClick={handleFacebookLogin}
-                disabled={isLoading || !facebookSDKLoaded}
+                disabled={isLoading || (!facebookSDKLoaded && facebookSDKError === null)}
               >
                 <Facebook className="mr-2 h-4 w-4" />
                 Facebook
@@ -166,7 +303,7 @@ const Login = () => {
                 variant="outline" 
                 className="w-full" 
                 onClick={handleGmailLogin}
-                disabled={isLoading}
+                disabled={isLoading || (!googleSDKLoaded && googleSDKError === null)}
               >
                 <Mail className="mr-2 h-4 w-4" />
                 Gmail
@@ -214,7 +351,11 @@ const Login = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isLoading}
+                >
                   {isLoading ? "Đang xử lý..." : "Đăng nhập"}
                 </Button>
               </form>
@@ -247,11 +388,20 @@ const Login = () => {
   );
 };
 
-// Add types for Facebook SDK
+// Types for Facebook SDK and Google SDK
 declare global {
   interface Window {
     FB: any;
     fbAsyncInit: () => void;
+    google: {
+      accounts: {
+        id: {
+          initialize: (config: any) => void;
+          prompt: (callback?: (notification: any) => void) => void;
+          renderButton: (parent: HTMLElement, options: any) => void;
+        }
+      }
+    };
   }
 }
 
