@@ -2,7 +2,7 @@
 import * as z from "zod";
 
 export const bookingFormSchema = z.object({
-  service: z.string().min(1, "Vui lòng chọn dịch vụ"),
+  services: z.array(z.string()).min(1, "Vui lòng chọn ít nhất một dịch vụ"),
   specialist: z.string().min(1, "Vui lòng chọn chuyên viên"),
   date: z.date({
     required_error: "Vui lòng chọn ngày",

@@ -18,6 +18,8 @@ import { AuthCard } from "@/components/auth/AuthCard";
 import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { Facebook, Mail } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -49,11 +51,29 @@ const Login = () => {
       if (values.email === "demo@example.com" && values.password === "password123") {
         toast.success("Đăng nhập thành công!");
         localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("user", JSON.stringify({ email: values.email }));
+        localStorage.setItem("user", JSON.stringify({ email: values.email, role: "user" }));
         navigate("/");
       } else {
         toast.error("Email hoặc mật khẩu không đúng");
       }
+    }, 1000);
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    setIsLoading(true);
+    
+    // Mock social login - replace with actual implementation
+    setTimeout(() => {
+      console.log(`Login with ${provider}`);
+      setIsLoading(false);
+      toast.success(`Đăng nhập bằng ${provider} thành công!`);
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("user", JSON.stringify({ 
+        email: `user@${provider.toLowerCase()}.com`, 
+        provider: provider,
+        role: "user"
+      }));
+      navigate("/");
     }, 1000);
   };
 
@@ -66,6 +86,37 @@ const Login = () => {
             title="Đăng nhập"
             description="Nhập thông tin tài khoản của bạn"
           >
+            {/* Social Login Buttons */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={() => handleSocialLogin("Facebook")}
+                disabled={isLoading}
+              >
+                <Facebook className="mr-2 h-4 w-4" />
+                Facebook
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={() => handleSocialLogin("Gmail")}
+                disabled={isLoading}
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                Gmail
+              </Button>
+            </div>
+
+            <div className="relative my-6">
+              <Separator />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="bg-background px-2 text-xs text-muted-foreground">
+                  Hoặc đăng nhập bằng email
+                </span>
+              </div>
+            </div>
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField

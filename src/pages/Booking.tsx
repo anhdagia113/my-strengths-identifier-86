@@ -3,18 +3,18 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BookingForm from "@/components/booking/BookingForm";
-import BookingSummary from "@/components/booking/BookingSummary";
+import MultiServiceBookingSummary from "@/components/booking/MultiServiceBookingSummary";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { toast } from "sonner";
 
 // Define the booking data interface
 export interface BookingData {
-  service?: {
+  services?: Array<{
     id: string;
     name: string;
     price: number;
-  };
+  }>;
   specialist?: {
     id: string;
     name: string;
@@ -54,7 +54,7 @@ const Booking = () => {
             </Card>
           </div>
           <div>
-            <BookingSummary bookingData={bookingData} />
+            <MultiServiceBookingSummary bookingData={bookingData} />
           </div>
         </div>
       </main>

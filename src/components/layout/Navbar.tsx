@@ -1,15 +1,49 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Logo from "./Logo";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Check if user is logged in
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+    setIsLoggedIn(loggedIn);
+    
+    if (loggedIn) {
+      try {
+        const userData = JSON.parse(localStorage.getItem("user") || "{}");
+        setUser(userData);
+      } catch (error) {
+        console.error("Failed to parse user data", error);
+      }
+    }
+  }, []);
+  
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+  
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    setUser(null);
+    navigate("/");
   };
 
   return (
@@ -47,12 +81,45 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="outline" asChild>
-              <Link to="/login">Đăng nhập</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/register">Đăng ký</Link>
-            </Button>
+            {isLoggedIn ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <User size={16} />
+                    <span className="hidden sm:inline">{user?.email}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Tài khoản</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard">Tổng quan</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard/profile">Thông tin cá nhân</Link>
+                  </DropdownMenuItem>
+                  {user?.role === "admin" && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin">Quản trị viên</Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Đăng xuất</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button variant="outline" asChild>
+                  <Link to="/login">Đăng nhập</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/register">Đăng ký</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -75,14 +142,35 @@ const Navbar = () => {
               <Link to="/quiz" className="hover:text-primary transition-colors px-2 py-1.5 rounded font-medium">
                 Trắc nghiệm da
               </Link>
+              
+              {isLoggedIn && (
+                <>
+                  <Link to="/dashboard" className="hover:text-primary transition-colors px-2 py-1.5 rounded font-medium">
+                    Tổng quan
+                  </Link>
+                  <Link to="/dashboard/profile" className="hover:text-primary transition-colors px-2 py-1.5 rounded font-medium">
+                    Thông tin cá nhân
+                  </Link>
+                </>
+              )}
             </div>
+            
             <div className="pt-2 flex gap-2">
-              <Button variant="outline" asChild className="flex-1">
-                <Link to="/login">Đăng nhập</Link>
-              </Button>
-              <Button asChild className="flex-1">
-                <Link to="/register">Đăng ký</Link>
-              </Button>
+              {isLoggedIn ? (
+                <Button variant="outline" className="flex-1" onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Đăng xuất
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" asChild className="flex-1">
+                    <Link to="/login">Đăng nhập</Link>
+                  </Button>
+                  <Button asChild className="flex-1">
+                    <Link to="/register">Đăng ký</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}

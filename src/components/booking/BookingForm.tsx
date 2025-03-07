@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BookingData } from "@/pages/Booking";
 import { bookingFormSchema, type BookingFormValues } from "./schema";
-import { ServiceSelect } from "./ServiceSelect";
+import { ServiceMultiSelect } from "./ServiceMultiSelect";
 import { SpecialistSelect } from "./SpecialistSelect";
 import { DateTimeSelect } from "./DateTimeSelect";
 import { CustomerInfo } from "./CustomerInfo";
@@ -21,6 +21,7 @@ const BookingForm = ({ onFormUpdate, onBookingComplete }: BookingFormProps) => {
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
+      services: [],
       name: "",
       phone: "",
       email: "",
@@ -29,11 +30,15 @@ const BookingForm = ({ onFormUpdate, onBookingComplete }: BookingFormProps) => {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      const serviceId = value.service;
+      const serviceIds = value.services || [];
       const specialistId = value.specialist;
 
+      const selectedServices = serviceIds.map(id => 
+        SERVICES.find(s => s.id === id)
+      ).filter(Boolean);
+
       const bookingData: BookingData = {
-        service: serviceId ? SERVICES.find(s => s.id === serviceId) : undefined,
+        services: selectedServices as Array<{id: string, name: string, price: number}>,
         specialist: specialistId ? SPECIALISTS.find(s => s.id === specialistId) : undefined,
         date: value.date,
         time: value.time,
@@ -56,7 +61,7 @@ const BookingForm = ({ onFormUpdate, onBookingComplete }: BookingFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <ServiceSelect form={form} />
+        <ServiceMultiSelect form={form} />
         <SpecialistSelect form={form} />
         <DateTimeSelect form={form} />
         <CustomerInfo form={form} />
