@@ -17,7 +17,7 @@ interface DateTimeSelectProps {
 
 export const DateTimeSelect = ({ form }: DateTimeSelectProps) => {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         control={form.control}
         name="date"
@@ -30,7 +30,7 @@ export const DateTimeSelect = ({ form }: DateTimeSelectProps) => {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-full pl-3 text-left font-normal",
+                      "w-full h-10 pl-3 text-left font-normal",
                       !field.value && "text-muted-foreground"
                     )}
                   >
@@ -69,7 +69,7 @@ export const DateTimeSelect = ({ form }: DateTimeSelectProps) => {
             <FormLabel>Giờ</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger className="h-10">
                   <SelectValue placeholder="Chọn giờ" />
                 </SelectTrigger>
               </FormControl>
