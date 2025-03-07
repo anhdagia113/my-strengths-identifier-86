@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Services from "./pages/Services";
 import Booking from "./pages/Booking";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -14,6 +15,7 @@ import NotFound from "./pages/NotFound";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import ServicesAdmin from "./pages/admin/Services";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +32,7 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/quiz" element={<Quiz />} />
-          <Route path="/services" element={<Index />} /> {/* Temporary redirect to home for /services */}
+          <Route path="/services" element={<Services />} />
           
           {/* Dashboard routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>
@@ -41,6 +43,7 @@ const App = () => (
           {/* Admin routes */}
           <Route path="/admin" element={<DashboardLayout requiredRole="admin" />}>
             <Route index element={<Dashboard />} />
+            <Route path="services" element={<ServicesAdmin />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />
