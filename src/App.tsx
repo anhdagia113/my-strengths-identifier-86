@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Booking from "./pages/Booking";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import AdminLogin from "./pages/AdminLogin";
 import Quiz from "./pages/Quiz";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/booking" element={<Booking />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/services" element={<Index />} /> {/* Temporary redirect to home for /services */}
           

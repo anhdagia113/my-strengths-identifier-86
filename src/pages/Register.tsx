@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,9 +33,45 @@ const registerSchema = z.object({
 
 type RegisterValues = z.infer<typeof registerSchema>;
 
+// Facebook SDK initialization - same as in Login page
+const initFacebookSDK = () => {
+  if (window.FB) return Promise.resolve();
+  
+  return new Promise<void>((resolve) => {
+    window.fbAsyncInit = function() {
+      window.FB.init({
+        appId: '1234567890', // Replace with your Facebook App ID
+        cookie: true,
+        xfbml: true,
+        version: 'v18.0'
+      });
+      resolve();
+    };
+
+    (function(d, s, id) {
+      const fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      const js = d.createElement(s) as HTMLScriptElement;
+      js.id = id;
+      js.src = "https://connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode?.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  });
+};
+
 const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [facebookSDKLoaded, setFacebookSDKLoaded] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Initialize Facebook SDK
+    initFacebookSDK().then(() => {
+      setFacebookSDKLoaded(true);
+    }).catch(error => {
+      console.error("Error initializing Facebook SDK:", error);
+    });
+  }, []);
 
   const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
@@ -59,21 +95,48 @@ const Register = () => {
     }, 1000);
   };
 
-  const handleSocialLogin = (provider: string) => {
+  const handleFacebookLogin = () => {
     setIsLoading(true);
     
-    // Mock social login - replace with actual implementation
-    setTimeout(() => {
-      console.log(`Register with ${provider}`);
+    if (!window.FB) {
+      toast.error("Facebook SDK chưa được tải");
       setIsLoading(false);
-      toast.success(`Đăng ký bằng ${provider} thành công!`);
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("user", JSON.stringify({ 
-        email: `user@${provider.toLowerCase()}.com`, 
-        provider: provider,
-        role: "user"
-      }));
-      navigate("/");
+      return;
+    }
+    
+    window.FB.login((response) => {
+      if (response.authResponse) {
+        // Get user information from Facebook
+        window.FB.api('/me', { fields: 'name,email' }, (userInfo) => {
+          console.log('Facebook register successful', userInfo);
+          toast.success("Đăng ký Facebook thành công!");
+          localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("user", JSON.stringify({ 
+            email: userInfo.email || `${userInfo.id}@facebook.com`,
+            name: userInfo.name,
+            provider: "facebook",
+            facebookId: userInfo.id,
+            role: "user"
+          }));
+          setIsLoading(false);
+          navigate("/");
+        });
+      } else {
+        console.log('Facebook registration cancelled');
+        toast.error("Đăng ký Facebook bị hủy");
+        setIsLoading(false);
+      }
+    }, { scope: 'public_profile,email' });
+  };
+
+  const handleGmailLogin = () => {
+    setIsLoading(true);
+    
+    // Mock Gmail login - In a real app, replace with Google OAuth
+    setTimeout(() => {
+      console.log(`Register with Gmail`);
+      setIsLoading(false);
+      toast.error("Đăng ký Gmail chưa được tích hợp");
     }, 1000);
   };
 
@@ -91,8 +154,8 @@ const Register = () => {
               <Button 
                 variant="outline" 
                 className="w-full" 
-                onClick={() => handleSocialLogin("Facebook")}
-                disabled={isLoading}
+                onClick={handleFacebookLogin}
+                disabled={isLoading || !facebookSDKLoaded}
               >
                 <Facebook className="mr-2 h-4 w-4" />
                 Facebook
@@ -100,7 +163,7 @@ const Register = () => {
               <Button 
                 variant="outline" 
                 className="w-full" 
-                onClick={() => handleSocialLogin("Gmail")}
+                onClick={handleGmailLogin}
                 disabled={isLoading}
               >
                 <Mail className="mr-2 h-4 w-4" />
@@ -202,5 +265,13 @@ const Register = () => {
     </div>
   );
 };
+
+// Add types for Facebook SDK
+declare global {
+  interface Window {
+    FB: any;
+    fbAsyncInit: () => void;
+  }
+}
 
 export default Register;

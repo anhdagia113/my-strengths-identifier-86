@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "./Logo";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, Shield } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +46,8 @@ const Navbar = () => {
     navigate("/");
   };
 
+  const isAdmin = user?.role === "admin" || user?.role === "staff";
+
   return (
     <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 shadow-sm">
       <div className="container mx-auto px-4 py-3">
@@ -85,7 +87,7 @@ const Navbar = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
-                    <User size={16} />
+                    {isAdmin ? <Shield size={16} className="text-primary" /> : <User size={16} />}
                     <span className="hidden sm:inline">{user?.email}</span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -117,6 +119,9 @@ const Navbar = () => {
                 </Button>
                 <Button asChild>
                   <Link to="/register">Đăng ký</Link>
+                </Button>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/admin/login">Quản trị</Link>
                 </Button>
               </>
             )}
@@ -168,6 +173,9 @@ const Navbar = () => {
                   </Button>
                   <Button asChild className="flex-1">
                     <Link to="/register">Đăng ký</Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild className="flex-1">
+                    <Link to="/admin/login">Quản trị</Link>
                   </Button>
                 </>
               )}

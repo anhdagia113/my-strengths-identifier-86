@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,9 +28,47 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
+// Facebook SDK initialization
+const initFacebookSDK = () => {
+  if (window.FB) return Promise.resolve();
+  
+  return new Promise<void>((resolve) => {
+    // Load the Facebook SDK asynchronously
+    window.fbAsyncInit = function() {
+      window.FB.init({
+        appId: '1234567890', // Replace with your Facebook App ID
+        cookie: true,
+        xfbml: true,
+        version: 'v18.0'
+      });
+      resolve();
+    };
+
+    // Load the SDK asynchronously
+    (function(d, s, id) {
+      const fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      const js = d.createElement(s) as HTMLScriptElement;
+      js.id = id;
+      js.src = "https://connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode?.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  });
+};
+
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [facebookSDKLoaded, setFacebookSDKLoaded] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Initialize Facebook SDK
+    initFacebookSDK().then(() => {
+      setFacebookSDKLoaded(true);
+    }).catch(error => {
+      console.error("Error initializing Facebook SDK:", error);
+    });
+  }, []);
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -59,21 +97,48 @@ const Login = () => {
     }, 1000);
   };
 
-  const handleSocialLogin = (provider: string) => {
+  const handleFacebookLogin = () => {
     setIsLoading(true);
     
-    // Mock social login - replace with actual implementation
-    setTimeout(() => {
-      console.log(`Login with ${provider}`);
+    if (!window.FB) {
+      toast.error("Facebook SDK chưa được tải");
       setIsLoading(false);
-      toast.success(`Đăng nhập bằng ${provider} thành công!`);
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("user", JSON.stringify({ 
-        email: `user@${provider.toLowerCase()}.com`, 
-        provider: provider,
-        role: "user"
-      }));
-      navigate("/");
+      return;
+    }
+    
+    window.FB.login((response) => {
+      if (response.authResponse) {
+        // Get user information from Facebook
+        window.FB.api('/me', { fields: 'name,email' }, (userInfo) => {
+          console.log('Facebook login successful', userInfo);
+          toast.success("Đăng nhập Facebook thành công!");
+          localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("user", JSON.stringify({ 
+            email: userInfo.email || `${userInfo.id}@facebook.com`, 
+            name: userInfo.name,
+            provider: "facebook",
+            facebookId: userInfo.id,
+            role: "user"
+          }));
+          setIsLoading(false);
+          navigate("/");
+        });
+      } else {
+        console.log('Facebook login cancelled');
+        toast.error("Đăng nhập Facebook bị hủy");
+        setIsLoading(false);
+      }
+    }, { scope: 'public_profile,email' });
+  };
+
+  const handleGmailLogin = () => {
+    setIsLoading(true);
+    
+    // Mock Gmail login - In a real app, replace with Google OAuth
+    setTimeout(() => {
+      console.log(`Login with Gmail`);
+      setIsLoading(false);
+      toast.error("Đăng nhập Gmail chưa được tích hợp");
     }, 1000);
   };
 
@@ -91,8 +156,8 @@ const Login = () => {
               <Button 
                 variant="outline" 
                 className="w-full" 
-                onClick={() => handleSocialLogin("Facebook")}
-                disabled={isLoading}
+                onClick={handleFacebookLogin}
+                disabled={isLoading || !facebookSDKLoaded}
               >
                 <Facebook className="mr-2 h-4 w-4" />
                 Facebook
@@ -100,7 +165,7 @@ const Login = () => {
               <Button 
                 variant="outline" 
                 className="w-full" 
-                onClick={() => handleSocialLogin("Gmail")}
+                onClick={handleGmailLogin}
                 disabled={isLoading}
               >
                 <Mail className="mr-2 h-4 w-4" />
@@ -154,7 +219,7 @@ const Login = () => {
                 </Button>
               </form>
             </Form>
-            <div className="mt-4 text-center text-sm">
+            <div className="mt-4 text-center text-sm space-y-2">
               <p>
                 Chưa có tài khoản?{" "}
                 <Link
@@ -162,6 +227,15 @@ const Login = () => {
                   className="text-primary hover:underline font-medium"
                 >
                   Đăng ký
+                </Link>
+              </p>
+              <p>
+                Đăng nhập quản trị viên?{" "}
+                <Link
+                  to="/admin/login"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Đăng nhập quản trị
                 </Link>
               </p>
             </div>
@@ -172,5 +246,13 @@ const Login = () => {
     </div>
   );
 };
+
+// Add types for Facebook SDK
+declare global {
+  interface Window {
+    FB: any;
+    fbAsyncInit: () => void;
+  }
+}
 
 export default Login;
