@@ -13,11 +13,14 @@ export const ServiceSelect = ({ form }: ServiceSelectProps) => {
   return (
     <FormField
       control={form.control}
-      name="service"
+      name="services"
       render={({ field }) => (
         <FormItem>
           <FormLabel>Dịch vụ</FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <Select 
+            onValueChange={(value) => field.onChange([value])} 
+            value={Array.isArray(field.value) && field.value.length > 0 ? field.value[0] : ""}
+          >
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder="Chọn dịch vụ" />

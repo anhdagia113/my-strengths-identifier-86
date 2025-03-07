@@ -28,6 +28,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/quiz" element={<Quiz />} />
+          <Route path="/services" element={<Index />} /> {/* Temporary redirect to home for /services */}
           
           {/* Dashboard routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>

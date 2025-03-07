@@ -27,6 +27,14 @@ const BookingSummary = ({ bookingData }: BookingSummaryProps) => {
     return `${formatDate(date)} - ${time}`;
   };
 
+  // Get first service (for backward compatibility)
+  const primaryService = bookingData.services && bookingData.services.length > 0 
+    ? bookingData.services[0] 
+    : undefined;
+
+  // Calculate total price
+  const totalPrice = bookingData.services?.reduce((sum, service) => sum + service.price, 0) || 0;
+
   return (
     <Card>
       <CardHeader>
@@ -36,11 +44,11 @@ const BookingSummary = ({ bookingData }: BookingSummaryProps) => {
         <div>
           <h3 className="font-medium">Dịch vụ đã chọn</h3>
           <p className="text-muted-foreground">
-            {bookingData.service ? bookingData.service.name : "Chưa chọn dịch vụ"}
+            {primaryService ? primaryService.name : "Chưa chọn dịch vụ"}
           </p>
-          {bookingData.service && (
+          {bookingData.services && bookingData.services.length > 0 && (
             <p className="text-sm font-medium text-primary">
-              {formatCurrency(bookingData.service.price)}
+              {formatCurrency(totalPrice)}
             </p>
           )}
         </div>
@@ -75,7 +83,7 @@ const BookingSummary = ({ bookingData }: BookingSummaryProps) => {
         <div>
           <h3 className="font-medium">Tổng chi phí dự kiến</h3>
           <p className="text-2xl font-bold text-primary">
-            {formatCurrency(bookingData.service?.price)}
+            {formatCurrency(totalPrice)}
           </p>
         </div>
       </CardContent>
