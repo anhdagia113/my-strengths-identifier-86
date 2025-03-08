@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   BarChart as BarChartIcon, 
@@ -6,7 +5,9 @@ import {
   Users, 
   Calendar, 
   DollarSign, 
-  TrendingDown 
+  TrendingDown,
+  Download,
+  FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,6 +32,26 @@ import {
   Pie,
   Cell
 } from "recharts";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
 
 const dailyData = [
   { name: "T2", bookings: 10, revenue: 1500000 },
@@ -62,19 +83,96 @@ const pieData = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const Reports = () => {
+  const [isNewReportDialogOpen, setIsNewReportDialogOpen] = useState(false);
+  
+  const generateExcel = (type: string) => {
+    // In a real application, this would generate and download an Excel file
+    // For now, we'll simulate the process with a toast notification
+    const reportTypes = {
+      daily: "báo cáo theo ngày",
+      monthly: "báo cáo theo tháng",
+      services: "báo cáo theo dịch vụ"
+    };
+    
+    toast.success(`Đã xuất ${reportTypes[type as keyof typeof reportTypes]} dưới dạng Excel`);
+  };
+  
+  const handleCreateNewReport = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real application, this would collect form data and generate a custom report
+    toast.success("Đã tạo báo cáo mới thành công");
+    setIsNewReportDialogOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Báo cáo & Thống kê</h1>
         <div className="space-x-2">
-          <Button variant="outline">
-            <Calendar className="mr-2 h-4 w-4" />
-            Xuất Excel
-          </Button>
-          <Button>
-            <BarChartIcon className="mr-2 h-4 w-4" />
-            Tạo báo cáo mới
-          </Button>
+          <Dialog open={isNewReportDialogOpen} onOpenChange={setIsNewReportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <BarChartIcon className="mr-2 h-4 w-4" />
+                Tạo báo cáo mới
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Tạo báo cáo mới</DialogTitle>
+                <DialogDescription>
+                  Tùy chỉnh báo cáo theo nhu cầu của bạn
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleCreateNewReport} className="space-y-4">
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="report-name">Tên báo cáo</Label>
+                    <Input id="report-name" placeholder="Báo cáo tháng 7/2023" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="report-type">Loại báo cáo</Label>
+                    <Select defaultValue="revenue">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn loại báo cáo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="revenue">Doanh thu</SelectItem>
+                        <SelectItem value="bookings">Lịch đặt</SelectItem>
+                        <SelectItem value="services">Dịch vụ</SelectItem>
+                        <SelectItem value="customers">Khách hàng</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="start-date">Từ ngày</Label>
+                      <Input id="start-date" type="date" required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="end-date">Đến ngày</Label>
+                      <Input id="end-date" type="date" required />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="report-format">Định dạng</Label>
+                    <Select defaultValue="excel">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn định dạng" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="excel">Excel (.xlsx)</SelectItem>
+                        <SelectItem value="pdf">PDF</SelectItem>
+                        <SelectItem value="csv">CSV</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Tạo báo cáo</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -155,11 +253,17 @@ const Reports = () => {
         
         <TabsContent value="daily" className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Thống kê trong tuần</CardTitle>
-              <CardDescription>
-                Biểu đồ lịch đặt và doanh thu theo ngày trong tuần
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Thống kê trong tuần</CardTitle>
+                <CardDescription>
+                  Biểu đồ lịch đặt và doanh thu theo ngày trong tuần
+                </CardDescription>
+              </div>
+              <Button variant="outline" onClick={() => generateExcel("daily")}>
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Xuất Excel
+              </Button>
             </CardHeader>
             <CardContent className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -190,11 +294,17 @@ const Reports = () => {
         
         <TabsContent value="monthly" className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Thống kê theo tháng</CardTitle>
-              <CardDescription>
-                Biểu đồ lịch đặt và doanh thu theo tháng trong năm
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Thống kê theo tháng</CardTitle>
+                <CardDescription>
+                  Biểu đồ lịch đặt và doanh thu theo tháng trong năm
+                </CardDescription>
+              </div>
+              <Button variant="outline" onClick={() => generateExcel("monthly")}>
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Xuất Excel
+              </Button>
             </CardHeader>
             <CardContent className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -225,11 +335,17 @@ const Reports = () => {
         
         <TabsContent value="services" className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Phân bổ dịch vụ</CardTitle>
-              <CardDescription>
-                Biểu đồ phân bổ lịch đặt theo dịch vụ
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Phân bổ dịch vụ</CardTitle>
+                <CardDescription>
+                  Biểu đồ phân bổ lịch đặt theo dịch vụ
+                </CardDescription>
+              </div>
+              <Button variant="outline" onClick={() => generateExcel("services")}>
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Xuất Excel
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
