@@ -17,6 +17,11 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import UserDashboard from "./pages/user/Dashboard";
 import AdminDashboard from "./pages/admin/Dashboard";
+import UserBookings from "./pages/user/Bookings";
+import UserSettings from "./pages/user/Settings";
+import AdminUsers from "./pages/admin/Users";
+import AdminBookings from "./pages/admin/Bookings";
+import AdminSettings from "./pages/admin/Settings";
 import Profile from "./pages/Profile";
 import ServicesAdmin from "./pages/admin/Services";
 
@@ -41,13 +46,19 @@ const App = () => (
           {/* User Dashboard routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<UserDashboard />} />
+            <Route path="bookings" element={<UserBookings />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<UserSettings />} />
           </Route>
 
           {/* Admin routes */}
           <Route path="/admin" element={<DashboardLayout requiredRole="admin" />}>
             <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
             <Route path="services" element={<ServicesAdmin />} />
+            <Route path="bookings" element={<AdminBookings />} />
+            <Route path="settings" element={<AdminSettings />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />

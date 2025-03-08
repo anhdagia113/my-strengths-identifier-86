@@ -1,8 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminDashboard from "./admin/Dashboard";
-import UserDashboard from "./user/Dashboard";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
@@ -14,21 +13,30 @@ const Dashboard = () => {
       try {
         const userData = JSON.parse(userStr);
         setUser(userData);
+        
+        // Redirect based on role
+        if (userData.role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/dashboard");
+        }
       } catch (error) {
         console.error("Failed to parse user data", error);
+        toast.error("Lỗi khi đọc thông tin người dùng");
         navigate("/login");
       }
     } else {
+      toast.error("Bạn cần đăng nhập để truy cập trang này");
       navigate("/login");
     }
   }, [navigate]);
 
+  // Loading state
   if (!user) {
-    return null; // Loading state or redirect handled by useEffect
+    return <div className="flex items-center justify-center h-screen">Đang tải...</div>;
   }
 
-  // Based on user role, render appropriate dashboard
-  return user.role === "admin" ? <AdminDashboard /> : <UserDashboard />;
+  return null; // Actual rendering is handled by the redirect
 };
 
 export default Dashboard;
