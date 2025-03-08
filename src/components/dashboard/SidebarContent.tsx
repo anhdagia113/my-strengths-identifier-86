@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Users, Calendar, Settings, 
-  User, ChevronDown, FilePlus, List, ShieldCheck
+  User, ChevronDown, FilePlus, List, ShieldCheck,
+  BarChart, CreditCard, FileText
 } from "lucide-react";
 import { 
   Collapsible, 
@@ -31,17 +32,19 @@ const SidebarContent = ({ user }: SidebarContentProps) => {
     setOpenCollapsible(openCollapsible === section ? null : section);
   };
 
+  const isAdmin = user.role === "admin";
+
   return (
     <div className="flex-1 py-6 space-y-1 overflow-y-auto">
       <SidebarNavLink 
-        to="/dashboard" 
+        to={isAdmin ? "/admin" : "/dashboard"} 
         icon={<LayoutDashboard size={20} />} 
-        isActive={isActiveLink("/dashboard")}
+        isActive={isActiveLink(isAdmin ? "/admin" : "/dashboard")}
       >
         Tổng quan
       </SidebarNavLink>
       
-      {user.role === "admin" && (
+      {isAdmin ? (
         <>
           <Collapsible open={openCollapsible === 'users'} onOpenChange={() => toggleCollapsible('users')}>
             <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between hover:bg-muted">
@@ -49,7 +52,7 @@ const SidebarContent = ({ user }: SidebarContentProps) => {
                 <Users size={20} />
                 <span>Quản lý người dùng</span>
               </div>
-              <ChevronDown size={16} />
+              <ChevronDown size={16} className={`transition-transform duration-200 ${openCollapsible === 'users' ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
             <CollapsibleContent>
               <Link 
@@ -81,7 +84,7 @@ const SidebarContent = ({ user }: SidebarContentProps) => {
                 <FilePlus size={20} />
                 <span>Quản lý dịch vụ</span>
               </div>
-              <ChevronDown size={16} />
+              <ChevronDown size={16} className={`transition-transform duration-200 ${openCollapsible === 'services' ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
             <CollapsibleContent>
               <Link 
@@ -94,31 +97,115 @@ const SidebarContent = ({ user }: SidebarContentProps) => {
               >
                 <span>Danh sách dịch vụ</span>
               </Link>
+              <Link 
+                to="/admin/categories" 
+                className={`pl-14 pr-6 py-2 flex items-center space-x-3 ${
+                  isActiveLink("/admin/categories") 
+                    ? "bg-primary/10 text-primary" 
+                    : "hover:bg-muted"
+                }`}
+              >
+                <span>Danh mục dịch vụ</span>
+              </Link>
             </CollapsibleContent>
           </Collapsible>
+          
+          <Collapsible open={openCollapsible === 'specialists'} onOpenChange={() => toggleCollapsible('specialists')}>
+            <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between hover:bg-muted">
+              <div className="flex items-center space-x-3">
+                <Users size={20} />
+                <span>Quản lý chuyên viên</span>
+              </div>
+              <ChevronDown size={16} className={`transition-transform duration-200 ${openCollapsible === 'specialists' ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <Link 
+                to="/admin/specialists" 
+                className={`pl-14 pr-6 py-2 flex items-center space-x-3 ${
+                  isActiveLink("/admin/specialists") 
+                    ? "bg-primary/10 text-primary" 
+                    : "hover:bg-muted"
+                }`}
+              >
+                <span>Danh sách chuyên viên</span>
+              </Link>
+              <Link 
+                to="/admin/specialists/schedule" 
+                className={`pl-14 pr-6 py-2 flex items-center space-x-3 ${
+                  isActiveLink("/admin/specialists/schedule") 
+                    ? "bg-primary/10 text-primary" 
+                    : "hover:bg-muted"
+                }`}
+              >
+                <span>Lịch làm việc</span>
+              </Link>
+            </CollapsibleContent>
+          </Collapsible>
+          
+          <SidebarNavLink 
+            to="/admin/bookings" 
+            icon={<Calendar size={20} />}
+            isActive={isActiveLink("/admin/bookings")}
+          >
+            Lịch đặt
+          </SidebarNavLink>
+          
+          <SidebarNavLink 
+            to="/admin/reports" 
+            icon={<BarChart size={20} />}
+            isActive={isActiveLink("/admin/reports")}
+          >
+            Báo cáo & Thống kê
+          </SidebarNavLink>
+          
+          <SidebarNavLink 
+            to="/admin/transactions" 
+            icon={<CreditCard size={20} />}
+            isActive={isActiveLink("/admin/transactions")}
+          >
+            Giao dịch
+          </SidebarNavLink>
+        </>
+      ) : (
+        <>
+          <SidebarNavLink 
+            to="/dashboard/bookings" 
+            icon={<Calendar size={20} />}
+            isActive={isActiveLink("/dashboard/bookings")}
+          >
+            Lịch đặt của tôi
+          </SidebarNavLink>
+          
+          <SidebarNavLink 
+            to="/dashboard/history" 
+            icon={<FileText size={20} />}
+            isActive={isActiveLink("/dashboard/history")}
+          >
+            Lịch sử dịch vụ
+          </SidebarNavLink>
+          
+          <SidebarNavLink 
+            to="/dashboard/payments" 
+            icon={<CreditCard size={20} />}
+            isActive={isActiveLink("/dashboard/payments")}
+          >
+            Thanh toán
+          </SidebarNavLink>
         </>
       )}
       
       <SidebarNavLink 
-        to="/dashboard/bookings" 
-        icon={<Calendar size={20} />}
-        isActive={isActiveLink("/dashboard/bookings")}
-      >
-        Lịch đặt
-      </SidebarNavLink>
-      
-      <SidebarNavLink 
-        to="/dashboard/profile" 
+        to={isAdmin ? "/admin/profile" : "/dashboard/profile"} 
         icon={<User size={20} />}
-        isActive={isActiveLink("/dashboard/profile")}
+        isActive={isActiveLink(isAdmin ? "/admin/profile" : "/dashboard/profile")}
       >
         Thông tin cá nhân
       </SidebarNavLink>
       
       <SidebarNavLink 
-        to="/dashboard/settings" 
+        to={isAdmin ? "/admin/settings" : "/dashboard/settings"} 
         icon={<Settings size={20} />}
-        isActive={isActiveLink("/dashboard/settings")}
+        isActive={isActiveLink(isAdmin ? "/admin/settings" : "/dashboard/settings")}
       >
         Cài đặt
       </SidebarNavLink>

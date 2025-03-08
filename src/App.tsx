@@ -15,6 +15,8 @@ import Quiz from "./pages/Quiz";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
+import UserDashboard from "./pages/user/Dashboard";
+import AdminDashboard from "./pages/admin/Dashboard";
 import Profile from "./pages/Profile";
 import ServicesAdmin from "./pages/admin/Services";
 
@@ -36,15 +38,15 @@ const App = () => (
           <Route path="/services" element={<Services />} />
           <Route path="/specialists" element={<Specialists />} />
           
-          {/* Dashboard routes */}
+          {/* User Dashboard routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<Dashboard />} />
+            <Route index element={<UserDashboard />} />
             <Route path="profile" element={<Profile />} />
           </Route>
 
           {/* Admin routes */}
           <Route path="/admin" element={<DashboardLayout requiredRole="admin" />}>
-            <Route index element={<Dashboard />} />
+            <Route index element={<AdminDashboard />} />
             <Route path="services" element={<ServicesAdmin />} />
           </Route>
           
