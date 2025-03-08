@@ -19,9 +19,13 @@ import UserDashboard from "./pages/user/Dashboard";
 import AdminDashboard from "./pages/admin/Dashboard";
 import UserBookings from "./pages/user/Bookings";
 import UserSettings from "./pages/user/Settings";
+import UserHistory from "./pages/user/History";
+import UserPayments from "./pages/user/Payments";
 import AdminUsers from "./pages/admin/Users";
 import AdminBookings from "./pages/admin/Bookings";
 import AdminSettings from "./pages/admin/Settings";
+import AdminReports from "./pages/admin/Reports";
+import AdminTransactions from "./pages/admin/Transactions";
 import Profile from "./pages/Profile";
 import ServicesAdmin from "./pages/admin/Services";
 
@@ -47,6 +51,8 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<UserDashboard />} />
             <Route path="bookings" element={<UserBookings />} />
+            <Route path="history" element={<UserHistory />} />
+            <Route path="payments" element={<UserPayments />} />
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<UserSettings />} />
           </Route>
@@ -57,6 +63,8 @@ const App = () => (
             <Route path="users" element={<AdminUsers />} />
             <Route path="services" element={<ServicesAdmin />} />
             <Route path="bookings" element={<AdminBookings />} />
+            <Route path="reports" element={<AdminReports />} />
+            <Route path="transactions" element={<AdminTransactions />} />
             <Route path="settings" element={<AdminSettings />} />
             <Route path="profile" element={<Profile />} />
           </Route>
