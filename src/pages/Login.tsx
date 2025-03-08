@@ -113,7 +113,7 @@ const Login = () => {
           
           try {
             window.google.accounts.id.initialize({
-              client_id: "916301161950-tr0d4f9agfj206e7rvcs3stsltrt4oni.apps.googleusercontent.com", // Thay thế bằng Client ID của bạn
+              client_id: "35156739608-j5hjt1e0v3a59et982igvj3l8ae2u7on.apps.googleusercontent.com", // Thay thế bằng Client ID của bạn
               callback: handleGoogleCallback,
               auto_select: false,
               cancel_on_tap_outside: true,
