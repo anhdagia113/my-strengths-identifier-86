@@ -120,9 +120,6 @@ const Navbar = () => {
                 <Button asChild>
                   <Link to="/register">Đăng ký</Link>
                 </Button>
-                {/* <Button variant="ghost" size="sm" asChild>
-                  <Link to="/admin/login">Quản trị</Link>
-                </Button> */}
               </>
             )}
           </div>
@@ -173,9 +170,6 @@ const Navbar = () => {
                   </Button>
                   <Button asChild className="flex-1">
                     <Link to="/register">Đăng ký</Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" asChild className="flex-1">
-                    <Link to="/admin/login">Quản trị</Link>
                   </Button>
                 </>
               )}
