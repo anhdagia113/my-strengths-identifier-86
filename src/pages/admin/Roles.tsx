@@ -1,242 +1,267 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Check, Edit, Plus, Shield, Trash } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { PlusCircle, Edit, Trash2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
-// Mock data for roles
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+// Define role schema
+const roleFormSchema = z.object({
+  name: z.string().min(2, {
+    message: "Tên vai trò phải có ít nhất 2 ký tự",
+  }),
+  description: z.string().optional(),
+});
+
+// Define permissions
+const defaultPermissions = [
+  { id: "users_view", name: "Xem người dùng", group: "Người dùng" },
+  { id: "users_create", name: "Thêm người dùng", group: "Người dùng" },
+  { id: "users_edit", name: "Sửa người dùng", group: "Người dùng" },
+  { id: "users_delete", name: "Xóa người dùng", group: "Người dùng" },
+  
+  { id: "services_view", name: "Xem dịch vụ", group: "Dịch vụ" },
+  { id: "services_create", name: "Thêm dịch vụ", group: "Dịch vụ" },
+  { id: "services_edit", name: "Sửa dịch vụ", group: "Dịch vụ" },
+  { id: "services_delete", name: "Xóa dịch vụ", group: "Dịch vụ" },
+  
+  { id: "bookings_view", name: "Xem lịch đặt", group: "Lịch đặt" },
+  { id: "bookings_create", name: "Thêm lịch đặt", group: "Lịch đặt" },
+  { id: "bookings_edit", name: "Sửa lịch đặt", group: "Lịch đặt" },
+  { id: "bookings_delete", name: "Xóa lịch đặt", group: "Lịch đặt" },
+  
+  { id: "reports_view", name: "Xem báo cáo", group: "Báo cáo" },
+  
+  { id: "transactions_view", name: "Xem giao dịch", group: "Giao dịch" },
+  { id: "transactions_create", name: "Thêm giao dịch", group: "Giao dịch" },
+  
+  { id: "staff_view", name: "Xem chuyên viên", group: "Chuyên viên" },
+  { id: "staff_create", name: "Thêm chuyên viên", group: "Chuyên viên" },
+  { id: "staff_edit", name: "Sửa chuyên viên", group: "Chuyên viên" },
+  { id: "staff_delete", name: "Xóa chuyên viên", group: "Chuyên viên" },
+  
+  { id: "blogs_view", name: "Xem bài viết", group: "Blog" },
+  { id: "blogs_create", name: "Thêm bài viết", group: "Blog" },
+  { id: "blogs_edit", name: "Sửa bài viết", group: "Blog" },
+  { id: "blogs_delete", name: "Xóa bài viết", group: "Blog" },
+  
+  { id: "settings_edit", name: "Chỉnh sửa cài đặt", group: "Cài đặt" },
+];
+
+// Example roles
 const initialRoles = [
   {
     id: "1",
     name: "Admin",
-    description: "Quyền quản trị hệ thống",
-    permissions: ["users.view", "users.create", "users.edit", "users.delete", "services.view", "services.create", "services.edit", "services.delete", "blogs.manage", "reports.view", "settings.edit"],
-    userCount: 2,
+    description: "Quản trị viên hệ thống có toàn quyền truy cập",
+    permissions: defaultPermissions.map(p => p.id),
   },
   {
     id: "2",
-    name: "Quản lý",
-    description: "Quản lý dịch vụ và nhân viên",
-    permissions: ["services.view", "services.create", "services.edit", "blogs.view", "reports.view"],
-    userCount: 3,
+    name: "Nhân viên",
+    description: "Nhân viên có quyền hạn chế",
+    permissions: ["users_view", "services_view", "bookings_view", "bookings_create", "bookings_edit", "staff_view"],
   },
   {
     id: "3",
-    name: "Nhân viên",
-    description: "Nhân viên cung cấp dịch vụ",
-    permissions: ["services.view", "blogs.view"],
-    userCount: 8,
+    name: "Kế toán",
+    description: "Nhân viên kế toán có quyền quản lý giao dịch",
+    permissions: ["transactions_view", "transactions_create", "reports_view"],
   },
-  {
-    id: "4",
-    name: "Khách hàng",
-    description: "Người dùng thông thường",
-    permissions: ["services.view", "blogs.view"],
-    userCount: 45,
-  }
 ];
 
-// Available permissions grouped by module
-const availablePermissions = [
-  {
-    module: "Người dùng",
-    permissions: [
-      { id: "users.view", label: "Xem danh sách người dùng" },
-      { id: "users.create", label: "Tạo người dùng mới" },
-      { id: "users.edit", label: "Chỉnh sửa người dùng" },
-      { id: "users.delete", label: "Xóa người dùng" },
-    ]
-  },
-  {
-    module: "Dịch vụ",
-    permissions: [
-      { id: "services.view", label: "Xem danh sách dịch vụ" },
-      { id: "services.create", label: "Tạo dịch vụ mới" },
-      { id: "services.edit", label: "Chỉnh sửa dịch vụ" },
-      { id: "services.delete", label: "Xóa dịch vụ" },
-    ]
-  },
-  {
-    module: "Blog",
-    permissions: [
-      { id: "blogs.view", label: "Xem blog" },
-      { id: "blogs.create", label: "Tạo bài viết" },
-      { id: "blogs.edit", label: "Chỉnh sửa bài viết" },
-      { id: "blogs.delete", label: "Xóa bài viết" },
-      { id: "blogs.manage", label: "Quản lý danh mục blog" },
-    ]
-  },
-  {
-    module: "Báo cáo",
-    permissions: [
-      { id: "reports.view", label: "Xem báo cáo" },
-      { id: "reports.export", label: "Xuất báo cáo" },
-    ]
-  },
-  {
-    module: "Cài đặt",
-    permissions: [
-      { id: "settings.view", label: "Xem cài đặt" },
-      { id: "settings.edit", label: "Chỉnh sửa cài đặt" },
-    ]
-  }
-];
+type Role = typeof initialRoles[0];
 
-const AdminRoles = () => {
-  const [roles, setRoles] = useState(initialRoles);
+const Roles = () => {
+  const [roles, setRoles] = useState<Role[]>(initialRoles);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [currentRole, setCurrentRole] = useState<(typeof initialRoles)[0] | null>(null);
-  const [newRole, setNewRole] = useState({
-    name: "",
-    description: "",
-    permissions: [] as string[],
-  });
+  const [currentRole, setCurrentRole] = useState<Role | null>(null);
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
-  // Handle permission toggle
-  const togglePermission = (permissionId: string, isAdd = true) => {
-    if (isAdd) {
-      setNewRole({
-        ...newRole,
-        permissions: [...newRole.permissions, permissionId]
-      });
-    } else {
-      setNewRole({
-        ...newRole,
-        permissions: newRole.permissions.filter(id => id !== permissionId)
-      });
-    }
-  };
+  // Group permissions by category
+  const groupedPermissions = defaultPermissions.reduce<Record<string, typeof defaultPermissions>>(
+    (groups, permission) => {
+      const group = permission.group;
+      if (!groups[group]) {
+        groups[group] = [];
+      }
+      groups[group].push(permission);
+      return groups;
+    },
+    {}
+  );
 
-  // Check if permission is selected
-  const isPermissionSelected = (permissionId: string) => {
-    return newRole.permissions.includes(permissionId);
-  };
-
-  // Open add role dialog
-  const openAddDialog = () => {
-    setNewRole({
+  // Add role form
+  const addForm = useForm<z.infer<typeof roleFormSchema>>({
+    resolver: zodResolver(roleFormSchema),
+    defaultValues: {
       name: "",
       description: "",
-      permissions: [],
-    });
-    setIsAddDialogOpen(true);
+    },
+  });
+
+  // Edit role form
+  const editForm = useForm<z.infer<typeof roleFormSchema>>({
+    resolver: zodResolver(roleFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
+
+  const handleAddRole = (values: z.infer<typeof roleFormSchema>) => {
+    const newRole: Role = {
+      id: Date.now().toString(),
+      name: values.name,
+      description: values.description || "",
+      permissions: selectedPermissions,
+    };
+
+    setRoles([...roles, newRole]);
+    toast.success("Vai trò mới đã được thêm thành công!");
+    setIsAddDialogOpen(false);
+    addForm.reset();
+    setSelectedPermissions([]);
   };
 
-  // Open edit role dialog
-  const openEditDialog = (role: typeof currentRole) => {
-    if (role) {
-      setCurrentRole(role);
-      setNewRole({
-        name: role.name,
-        description: role.description,
-        permissions: [...role.permissions],
-      });
-      setIsEditDialogOpen(true);
+  const handleEditRole = (values: z.infer<typeof roleFormSchema>) => {
+    if (currentRole) {
+      const updatedRoles = roles.map(role =>
+        role.id === currentRole.id ? {
+          ...role,
+          name: values.name,
+          description: values.description || "",
+          permissions: selectedPermissions,
+        } : role
+      );
+
+      setRoles(updatedRoles);
+      toast.success("Cập nhật vai trò thành công!");
+      setIsEditDialogOpen(false);
+      setCurrentRole(null);
     }
   };
 
-  // Open delete role dialog
-  const openDeleteDialog = (role: typeof currentRole) => {
+  const handleDeleteRole = () => {
+    if (currentRole) {
+      setRoles(roles.filter(role => role.id !== currentRole.id));
+      toast.success("Vai trò đã được xóa thành công!");
+      setIsDeleteDialogOpen(false);
+      setCurrentRole(null);
+    }
+  };
+
+  const openEditDialog = (role: Role) => {
+    setCurrentRole(role);
+    editForm.reset({
+      name: role.name,
+      description: role.description,
+    });
+    setSelectedPermissions(role.permissions);
+    setIsEditDialogOpen(true);
+  };
+
+  const openDeleteDialog = (role: Role) => {
     setCurrentRole(role);
     setIsDeleteDialogOpen(true);
   };
 
-  // Handle add role
-  const handleAddRole = () => {
-    if (!newRole.name) {
-      toast.error("Vui lòng nhập tên vai trò!");
-      return;
+  const handlePermissionChange = (permissionId: string, isChecked: boolean) => {
+    if (isChecked) {
+      setSelectedPermissions([...selectedPermissions, permissionId]);
+    } else {
+      setSelectedPermissions(selectedPermissions.filter(id => id !== permissionId));
     }
-
-    const role = {
-      id: Date.now().toString(),
-      name: newRole.name,
-      description: newRole.description,
-      permissions: newRole.permissions,
-      userCount: 0,
-    };
-
-    setRoles([...roles, role]);
-    setIsAddDialogOpen(false);
-    toast.success("Thêm vai trò mới thành công!");
   };
 
-  // Handle edit role
-  const handleEditRole = () => {
-    if (!currentRole || !newRole.name) {
-      toast.error("Dữ liệu không hợp lệ!");
-      return;
-    }
-
-    const updatedRoles = roles.map(role => 
-      role.id === currentRole.id 
-        ? { 
-            ...role, 
-            name: newRole.name,
-            description: newRole.description,
-            permissions: newRole.permissions 
-          } 
-        : role
-    );
-
-    setRoles(updatedRoles);
-    setIsEditDialogOpen(false);
-    toast.success("Cập nhật vai trò thành công!");
-  };
-
-  // Handle delete role
-  const handleDeleteRole = () => {
-    if (currentRole) {
-      if (currentRole.name === "Admin") {
-        toast.error("Không thể xóa vai trò Admin!");
-        setIsDeleteDialogOpen(false);
-        return;
+  const handleSelectAllInGroup = (group: string, isChecked: boolean) => {
+    const groupPermissionIds = groupedPermissions[group].map(p => p.id);
+    
+    if (isChecked) {
+      // Add all permissions from this group that aren't already selected
+      const newPermissions = [...selectedPermissions];
+      for (const permId of groupPermissionIds) {
+        if (!newPermissions.includes(permId)) {
+          newPermissions.push(permId);
+        }
       }
-
-      const updatedRoles = roles.filter(role => role.id !== currentRole.id);
-      setRoles(updatedRoles);
-      setIsDeleteDialogOpen(false);
-      toast.success("Xóa vai trò thành công!");
+      setSelectedPermissions(newPermissions);
+    } else {
+      // Remove all permissions from this group
+      setSelectedPermissions(selectedPermissions.filter(id => !groupPermissionIds.includes(id)));
     }
+  };
+
+  const isGroupFullySelected = (group: string) => {
+    const groupPermissionIds = groupedPermissions[group].map(p => p.id);
+    return groupPermissionIds.every(id => selectedPermissions.includes(id));
+  };
+
+  const isGroupPartiallySelected = (group: string) => {
+    const groupPermissionIds = groupedPermissions[group].map(p => p.id);
+    return groupPermissionIds.some(id => selectedPermissions.includes(id)) && 
+           !groupPermissionIds.every(id => selectedPermissions.includes(id));
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Quản lý phân quyền</h1>
-        <Button onClick={openAddDialog}>
-          <Plus className="mr-2 h-4 w-4" />
-          Thêm vai trò
+        <h1 className="text-2xl font-bold">Phân quyền người dùng</h1>
+        <Button onClick={() => {
+          setIsAddDialogOpen(true);
+          setSelectedPermissions([]);
+        }}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Thêm vai trò
         </Button>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Danh sách vai trò</CardTitle>
-          <CardDescription>Quản lý các vai trò và quyền hạn trong hệ thống</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -244,8 +269,7 @@ const AdminRoles = () => {
               <TableRow>
                 <TableHead>Tên vai trò</TableHead>
                 <TableHead>Mô tả</TableHead>
-                <TableHead>Số người dùng</TableHead>
-                <TableHead>Quyền hạn</TableHead>
+                <TableHead>Số quyền hạn</TableHead>
                 <TableHead className="text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
@@ -254,41 +278,23 @@ const AdminRoles = () => {
                 <TableRow key={role.id}>
                   <TableCell className="font-medium">{role.name}</TableCell>
                   <TableCell>{role.description}</TableCell>
-                  <TableCell>{role.userCount}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {role.permissions.length > 3 ? (
-                        <>
-                          <Badge variant="outline" className="bg-primary/10">
-                            {role.permissions.length} quyền
-                          </Badge>
-                        </>
-                      ) : (
-                        role.permissions.map(permission => (
-                          <Badge key={permission} variant="outline" className="bg-primary/10">
-                            {permission.split('.')[0]}
-                          </Badge>
-                        ))
-                      )}
-                    </div>
-                  </TableCell>
+                  <TableCell>{role.permissions.length}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-2">
                       <Button
                         variant="outline"
-                        size="icon"
+                        size="sm"
                         onClick={() => openEditDialog(role)}
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-4 w-4 mr-1" /> Sửa
                       </Button>
                       <Button
                         variant="outline"
-                        size="icon"
+                        size="sm"
+                        className="text-destructive"
                         onClick={() => openDeleteDialog(role)}
-                        className="text-destructive hover:text-destructive"
-                        disabled={role.name === "Admin"}
                       >
-                        <Trash className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 mr-1" /> Xóa
                       </Button>
                     </div>
                   </TableCell>
@@ -305,75 +311,82 @@ const AdminRoles = () => {
           <DialogHeader>
             <DialogTitle>Thêm vai trò mới</DialogTitle>
             <DialogDescription>
-              Tạo vai trò mới và thiết lập quyền hạn
+              Tạo vai trò mới và phân quyền cho người dùng trong hệ thống.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="role-name">Tên vai trò <span className="text-destructive">*</span></Label>
-                <Input 
-                  id="role-name" 
-                  value={newRole.name}
-                  onChange={(e) => setNewRole({...newRole, name: e.target.value})}
-                  placeholder="Nhập tên vai trò" 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="role-description">Mô tả</Label>
-                <Input 
-                  id="role-description" 
-                  value={newRole.description}
-                  onChange={(e) => setNewRole({...newRole, description: e.target.value})}
-                  placeholder="Mô tả ngắn về vai trò" 
-                />
-              </div>
-            </div>
+          <Form {...addForm}>
+            <form onSubmit={addForm.handleSubmit(handleAddRole)} className="space-y-6">
+              <FormField
+                control={addForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tên vai trò</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nhập tên vai trò" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={addForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mô tả</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Mô tả vai trò này" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div className="space-y-4">
-              <Label>Quyền hạn</Label>
-              <div className="space-y-6">
-                {availablePermissions.map((module) => (
-                  <div key={module.module} className="space-y-2">
-                    <h4 className="font-medium text-sm">
-                      <Shield className="h-4 w-4 inline mr-1" />
-                      {module.module}
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {module.permissions.map((permission) => (
-                        <div key={permission.id} className="flex items-center space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => togglePermission(permission.id, !isPermissionSelected(permission.id))}
-                            className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm w-full
-                              ${isPermissionSelected(permission.id) 
-                                ? 'bg-primary/10 text-primary border border-primary/30' 
-                                : 'bg-muted hover:bg-muted/80 border border-transparent'
-                              }`}
-                          >
-                            <div className="w-4 h-4 flex items-center justify-center">
-                              {isPermissionSelected(permission.id) && (
-                                <Check className="h-3 w-3" />
-                              )}
-                            </div>
-                            <span>{permission.label}</span>
-                          </button>
-                        </div>
-                      ))}
+              <div>
+                <Label>Phân quyền</Label>
+                <div className="mt-2 border rounded-md p-4 max-h-[300px] overflow-y-auto">
+                  {Object.entries(groupedPermissions).map(([group, permissions]) => (
+                    <div key={group} className="mb-4">
+                      <div className="flex items-center mb-2">
+                        <Checkbox 
+                          id={`group-${group}`}
+                          checked={isGroupFullySelected(group)}
+                          className="mr-2 data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground"
+                          data-state={isGroupPartiallySelected(group) ? "indeterminate" : undefined}
+                          onCheckedChange={(checked) => 
+                            handleSelectAllInGroup(group, checked === true)
+                          }
+                        />
+                        <Label htmlFor={`group-${group}`} className="font-bold">
+                          {group}
+                        </Label>
+                      </div>
+                      <div className="pl-6 grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {permissions.map((permission) => (
+                          <div key={permission.id} className="flex items-center">
+                            <Checkbox 
+                              id={`add-${permission.id}`}
+                              checked={selectedPermissions.includes(permission.id)}
+                              onCheckedChange={(checked) => 
+                                handlePermissionChange(permission.id, checked === true)
+                              }
+                              className="mr-2"
+                            />
+                            <Label htmlFor={`add-${permission.id}`}>{permission.name}</Label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              Hủy
-            </Button>
-            <Button type="button" onClick={handleAddRole}>
-              Thêm vai trò
-            </Button>
-          </DialogFooter>
+
+              <DialogFooter>
+                <Button type="submit">Tạo vai trò</Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 
@@ -383,97 +396,97 @@ const AdminRoles = () => {
           <DialogHeader>
             <DialogTitle>Chỉnh sửa vai trò</DialogTitle>
             <DialogDescription>
-              Cập nhật thông tin và quyền hạn cho vai trò
+              Cập nhật thông tin và phân quyền cho vai trò hiện tại.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-role-name">Tên vai trò <span className="text-destructive">*</span></Label>
-                <Input 
-                  id="edit-role-name" 
-                  value={newRole.name}
-                  onChange={(e) => setNewRole({...newRole, name: e.target.value})}
-                  placeholder="Nhập tên vai trò" 
-                  disabled={currentRole?.name === "Admin"}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-role-description">Mô tả</Label>
-                <Input 
-                  id="edit-role-description" 
-                  value={newRole.description}
-                  onChange={(e) => setNewRole({...newRole, description: e.target.value})}
-                  placeholder="Mô tả ngắn về vai trò" 
-                />
-              </div>
-            </div>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(handleEditRole)} className="space-y-6">
+              <FormField
+                control={editForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tên vai trò</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nhập tên vai trò" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={editForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mô tả</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Mô tả vai trò này" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div className="space-y-4">
-              <Label>Quyền hạn</Label>
-              <div className="space-y-6">
-                {availablePermissions.map((module) => (
-                  <div key={module.module} className="space-y-2">
-                    <h4 className="font-medium text-sm">
-                      <Shield className="h-4 w-4 inline mr-1" />
-                      {module.module}
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {module.permissions.map((permission) => (
-                        <div key={permission.id} className="flex items-center space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => togglePermission(permission.id, !isPermissionSelected(permission.id))}
-                            disabled={currentRole?.name === "Admin" && permission.id.startsWith("users")}
-                            className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm w-full
-                              ${isPermissionSelected(permission.id) 
-                                ? 'bg-primary/10 text-primary border border-primary/30' 
-                                : 'bg-muted hover:bg-muted/80 border border-transparent'
-                              } ${(currentRole?.name === "Admin" && permission.id.startsWith("users")) ? 'opacity-60 cursor-not-allowed' : ''}`}
-                          >
-                            <div className="w-4 h-4 flex items-center justify-center">
-                              {isPermissionSelected(permission.id) && (
-                                <Check className="h-3 w-3" />
-                              )}
-                            </div>
-                            <span>{permission.label}</span>
-                          </button>
-                        </div>
-                      ))}
+              <div>
+                <Label>Phân quyền</Label>
+                <div className="mt-2 border rounded-md p-4 max-h-[300px] overflow-y-auto">
+                  {Object.entries(groupedPermissions).map(([group, permissions]) => (
+                    <div key={group} className="mb-4">
+                      <div className="flex items-center mb-2">
+                        <Checkbox 
+                          id={`edit-group-${group}`}
+                          checked={isGroupFullySelected(group)}
+                          className="mr-2 data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground"
+                          data-state={isGroupPartiallySelected(group) ? "indeterminate" : undefined}
+                          onCheckedChange={(checked) => 
+                            handleSelectAllInGroup(group, checked === true)
+                          }
+                        />
+                        <Label htmlFor={`edit-group-${group}`} className="font-bold">
+                          {group}
+                        </Label>
+                      </div>
+                      <div className="pl-6 grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {permissions.map((permission) => (
+                          <div key={permission.id} className="flex items-center">
+                            <Checkbox 
+                              id={`edit-${permission.id}`}
+                              checked={selectedPermissions.includes(permission.id)}
+                              onCheckedChange={(checked) => 
+                                handlePermissionChange(permission.id, checked === true)
+                              }
+                              className="mr-2"
+                            />
+                            <Label htmlFor={`edit-${permission.id}`}>{permission.name}</Label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Hủy
-            </Button>
-            <Button type="button" onClick={handleEditRole}>
-              Lưu thay đổi
-            </Button>
-          </DialogFooter>
+
+              <DialogFooter>
+                <Button type="submit">Lưu thay đổi</Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Role Dialog */}
+      {/* Delete Role Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa vai trò</AlertDialogTitle>
             <AlertDialogDescription>
               Bạn có chắc chắn muốn xóa vai trò "{currentRole?.name}"? Hành động này không thể hoàn tác.
-              {currentRole?.userCount ? (
-                <p className="mt-2 text-destructive">
-                  Lưu ý: Hiện có {currentRole.userCount} người dùng đang được gán vai trò này.
-                </p>
-              ) : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteRole} className="bg-destructive text-destructive-foreground">
+            <AlertDialogAction onClick={handleDeleteRole} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Xóa
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -483,4 +496,4 @@ const AdminRoles = () => {
   );
 };
 
-export default AdminRoles;
+export default Roles;

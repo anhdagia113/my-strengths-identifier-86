@@ -3,8 +3,9 @@ import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { 
   LayoutDashboard, Users, Calendar, Settings, 
-  User, ChevronDown, FilePlus, List, ShieldCheck,
-  BarChart, CreditCard, FileText, BookOpen
+  ChevronDown, FilePlus, List, ShieldCheck,
+  BarChart, CreditCard, FileText, BookOpen,
+  Clock, FolderPlus, Tags, UserCheck
 } from "lucide-react";
 import { 
   Collapsible, 
@@ -113,7 +114,7 @@ const SidebarContent = ({ user }: SidebarContentProps) => {
           <Collapsible open={openCollapsible === 'specialists'} onOpenChange={() => toggleCollapsible('specialists')}>
             <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between hover:bg-muted">
               <div className="flex items-center space-x-3">
-                <Users size={20} />
+                <UserCheck size={20} />
                 <span>Quản lý chuyên viên</span>
               </div>
               <ChevronDown size={16} className={`transition-transform duration-200 ${openCollapsible === 'specialists' ? 'rotate-180' : ''}`} />

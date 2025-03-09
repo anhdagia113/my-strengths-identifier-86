@@ -44,69 +44,58 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 
-// Blog category schema
+// Service category schema
 const categoryFormSchema = z.object({
   name: z.string().min(2, {
     message: "Tên danh mục phải có ít nhất 2 ký tự",
   }),
-  slug: z.string().min(2, {
-    message: "Slug phải có ít nhất 2 ký tự",
-  }).regex(/^[a-z0-9-]+$/, {
-    message: "Slug chỉ được chứa chữ thường, số và dấu gạch ngang",
-  }),
   description: z.string().optional(),
-  isActive: z.boolean().default(true),
+  icon: z.string().optional(),
 });
 
 // Example categories
 const initialCategories = [
   {
     id: "1",
-    name: "Làm đẹp",
-    slug: "lam-dep",
-    description: "Các bài viết về làm đẹp và chăm sóc da",
-    isActive: true,
-    postsCount: 5
+    name: "Chăm sóc da",
+    description: "Các dịch vụ chăm sóc da cơ bản và chuyên sâu",
+    icon: "Sparkles",
+    servicesCount: 5
   },
   {
     id: "2",
-    name: "Sức khỏe",
-    slug: "suc-khoe",
-    description: "Các bài viết về sức khỏe và lối sống",
-    isActive: true,
-    postsCount: 3
+    name: "Điều trị",
+    description: "Các dịch vụ điều trị da chuyên sâu",
+    icon: "Syringe",
+    servicesCount: 3
   },
   {
     id: "3",
-    name: "Trị liệu",
-    slug: "tri-lieu",
-    description: "Các bài viết về trị liệu và điều trị",
-    isActive: true,
-    postsCount: 2
+    name: "Trẻ hóa",
+    description: "Các dịch vụ trẻ hóa da và chống lão hóa",
+    icon: "Clock",
+    servicesCount: 2
   },
   {
     id: "4",
-    name: "Tin tức",
-    slug: "tin-tuc",
-    description: "Các tin tức về ngành làm đẹp",
-    isActive: true,
-    postsCount: 7
+    name: "Massage",
+    description: "Các dịch vụ massage mặt và cơ thể",
+    icon: "Massage",
+    servicesCount: 4
   },
   {
     id: "5",
-    name: "Khuyến mãi",
-    slug: "khuyen-mai",
-    description: "Các bài viết về chương trình khuyến mãi",
-    isActive: false,
-    postsCount: 0
+    name: "Làm đẹp",
+    description: "Các dịch vụ làm đẹp khác",
+    icon: "Gem",
+    servicesCount: 1
   }
 ];
 
 type Category = typeof initialCategories[0];
 
-const BlogCategories = () => {
+const ServiceCategories = () => {
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -118,9 +107,8 @@ const BlogCategories = () => {
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       name: "",
-      slug: "",
       description: "",
-      isActive: true,
+      icon: "",
     },
   });
 
@@ -129,82 +117,39 @@ const BlogCategories = () => {
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       name: "",
-      slug: "",
       description: "",
-      isActive: true,
+      icon: "",
     },
   });
 
-  // Auto-generate slug from name for add form
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[đĐ]/g, "d")
-      .replace(/[^a-z0-9\s]/g, "")
-      .replace(/\s+/g, "-");
-  };
-
-  const watchAddName = addForm.watch("name");
-  const watchAddSlug = addForm.watch("slug");
-
-  if (watchAddName && !watchAddSlug) {
-    const generatedSlug = generateSlug(watchAddName);
-    addForm.setValue("slug", generatedSlug);
-  }
-
   const handleAddCategory = (values: z.infer<typeof categoryFormSchema>) => {
-    // Check if slug is already in use
-    if (categories.some(cat => cat.slug === values.slug)) {
-      addForm.setError("slug", { 
-        type: "manual", 
-        message: "Slug này đã được sử dụng, vui lòng chọn slug khác" 
-      });
-      return;
-    }
-
     const newCategory: Category = {
       id: Date.now().toString(),
       name: values.name,
-      slug: values.slug,
       description: values.description || "",
-      isActive: values.isActive,
-      postsCount: 0
+      icon: values.icon || "Folder",
+      servicesCount: 0
     };
 
     setCategories([...categories, newCategory]);
-    toast.success("Danh mục blog mới đã được thêm thành công!");
+    toast.success("Danh mục dịch vụ mới đã được thêm thành công!");
     setIsAddDialogOpen(false);
     addForm.reset();
   };
 
   const handleEditCategory = (values: z.infer<typeof categoryFormSchema>) => {
     if (currentCategory) {
-      // Check if slug is already in use (excluding the current category)
-      if (
-        values.slug !== currentCategory.slug && 
-        categories.some(cat => cat.slug === values.slug)
-      ) {
-        editForm.setError("slug", { 
-          type: "manual", 
-          message: "Slug này đã được sử dụng, vui lòng chọn slug khác" 
-        });
-        return;
-      }
-
       const updatedCategories = categories.map(category =>
         category.id === currentCategory.id ? {
           ...category,
           name: values.name,
-          slug: values.slug,
           description: values.description || "",
-          isActive: values.isActive,
+          icon: values.icon || category.icon,
         } : category
       );
 
       setCategories(updatedCategories);
-      toast.success("Danh mục blog đã được cập nhật thành công!");
+      toast.success("Danh mục dịch vụ đã được cập nhật thành công!");
       setIsEditDialogOpen(false);
       setCurrentCategory(null);
     }
@@ -212,14 +157,14 @@ const BlogCategories = () => {
 
   const handleDeleteCategory = () => {
     if (currentCategory) {
-      if (currentCategory.postsCount > 0) {
-        toast.error(`Không thể xóa danh mục này vì có ${currentCategory.postsCount} bài viết đang sử dụng!`);
+      if (currentCategory.servicesCount > 0) {
+        toast.error(`Không thể xóa danh mục này vì có ${currentCategory.servicesCount} dịch vụ đang sử dụng!`);
         setIsDeleteDialogOpen(false);
         return;
       }
       
       setCategories(categories.filter(category => category.id !== currentCategory.id));
-      toast.success("Danh mục blog đã được xóa thành công!");
+      toast.success("Danh mục dịch vụ đã được xóa thành công!");
       setIsDeleteDialogOpen(false);
       setCurrentCategory(null);
     }
@@ -229,9 +174,8 @@ const BlogCategories = () => {
     setCurrentCategory(category);
     editForm.reset({
       name: category.name,
-      slug: category.slug,
       description: category.description,
-      isActive: category.isActive,
+      icon: category.icon,
     });
     setIsEditDialogOpen(true);
   };
@@ -244,7 +188,7 @@ const BlogCategories = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Quản lý danh mục blog</h1>
+        <h1 className="text-2xl font-bold">Quản lý danh mục dịch vụ</h1>
         <Button onClick={() => setIsAddDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" /> Thêm danh mục
         </Button>
@@ -252,17 +196,16 @@ const BlogCategories = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Danh sách danh mục blog</CardTitle>
+          <CardTitle>Danh sách danh mục dịch vụ</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Tên danh mục</TableHead>
-                <TableHead>Slug</TableHead>
                 <TableHead>Mô tả</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead>Số bài viết</TableHead>
+                <TableHead>Icon</TableHead>
+                <TableHead>Số dịch vụ</TableHead>
                 <TableHead className="text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
@@ -271,25 +214,12 @@ const BlogCategories = () => {
                 <TableRow key={category.id}>
                   <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell>
-                    <code className="bg-muted rounded px-1.5 py-0.5 text-sm">
-                      {category.slug}
-                    </code>
-                  </TableCell>
-                  <TableCell>
                     <div className="max-w-[300px] truncate">
                       {category.description}
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      category.isActive 
-                        ? "bg-green-100 text-green-800" 
-                        : "bg-gray-100 text-gray-800"
-                    }`}>
-                      {category.isActive ? "Hoạt động" : "Ẩn"}
-                    </span>
-                  </TableCell>
-                  <TableCell>{category.postsCount}</TableCell>
+                  <TableCell>{category.icon}</TableCell>
+                  <TableCell>{category.servicesCount}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-2">
                       <Button
@@ -320,9 +250,9 @@ const BlogCategories = () => {
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Thêm danh mục blog mới</DialogTitle>
+            <DialogTitle>Thêm danh mục dịch vụ mới</DialogTitle>
             <DialogDescription>
-              Tạo danh mục blog mới để phân loại các bài viết.
+              Tạo danh mục dịch vụ mới để phân loại các dịch vụ.
             </DialogDescription>
           </DialogHeader>
           <Form {...addForm}>
@@ -335,19 +265,6 @@ const BlogCategories = () => {
                     <FormLabel>Tên danh mục</FormLabel>
                     <FormControl>
                       <Input placeholder="Nhập tên danh mục" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={addForm.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug</FormLabel>
-                    <FormControl>
-                      <Input placeholder="ten-danh-muc" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -372,23 +289,14 @@ const BlogCategories = () => {
               />
               <FormField
                 control={addForm.control}
-                name="isActive"
+                name="icon"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormItem>
+                    <FormLabel>Icon (tùy chọn)</FormLabel>
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Input placeholder="Tên icon" {...field} />
                     </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        Hoạt động
-                      </FormLabel>
-                      <p className="text-sm text-muted-foreground">
-                        Danh mục sẽ hiển thị với người dùng
-                      </p>
-                    </div>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -404,9 +312,9 @@ const BlogCategories = () => {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Chỉnh sửa danh mục blog</DialogTitle>
+            <DialogTitle>Chỉnh sửa danh mục dịch vụ</DialogTitle>
             <DialogDescription>
-              Chỉnh sửa thông tin của danh mục blog hiện tại.
+              Chỉnh sửa thông tin của danh mục dịch vụ hiện tại.
             </DialogDescription>
           </DialogHeader>
           <Form {...editForm}>
@@ -419,19 +327,6 @@ const BlogCategories = () => {
                     <FormLabel>Tên danh mục</FormLabel>
                     <FormControl>
                       <Input placeholder="Nhập tên danh mục" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug</FormLabel>
-                    <FormControl>
-                      <Input placeholder="ten-danh-muc" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -457,23 +352,14 @@ const BlogCategories = () => {
               />
               <FormField
                 control={editForm.control}
-                name="isActive"
+                name="icon"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormItem>
+                    <FormLabel>Icon (tùy chọn)</FormLabel>
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Input placeholder="Tên icon" {...field} value={field.value || ""} />
                     </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        Hoạt động
-                      </FormLabel>
-                      <p className="text-sm text-muted-foreground">
-                        Danh mục sẽ hiển thị với người dùng
-                      </p>
-                    </div>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -491,8 +377,8 @@ const BlogCategories = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa danh mục</AlertDialogTitle>
             <AlertDialogDescription>
-              {currentCategory?.postsCount && currentCategory.postsCount > 0 ? 
-                `Không thể xóa danh mục "${currentCategory.name}" vì có ${currentCategory.postsCount} bài viết đang sử dụng!` : 
+              {currentCategory?.servicesCount && currentCategory.servicesCount > 0 ? 
+                `Không thể xóa danh mục "${currentCategory.name}" vì có ${currentCategory.servicesCount} dịch vụ đang sử dụng!` : 
                 `Bạn có chắc chắn muốn xóa danh mục "${currentCategory?.name}"? Hành động này không thể hoàn tác.`
               }
             </AlertDialogDescription>
@@ -502,7 +388,7 @@ const BlogCategories = () => {
             <AlertDialogAction 
               onClick={handleDeleteCategory} 
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={currentCategory?.postsCount && currentCategory.postsCount > 0}
+              disabled={currentCategory?.servicesCount && currentCategory.servicesCount > 0}
             >
               Xóa
             </AlertDialogAction>
@@ -513,4 +399,4 @@ const BlogCategories = () => {
   );
 };
 
-export default BlogCategories;
+export default ServiceCategories;
