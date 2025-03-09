@@ -27,8 +27,10 @@ import AdminSettings from "./pages/admin/Settings";
 import AdminReports from "./pages/admin/Reports";
 import AdminTransactions from "./pages/admin/Transactions";
 import AdminStaff from "./pages/admin/Staff";
-import Profile from "./pages/Profile";
 import ServicesAdmin from "./pages/admin/Services";
+import Blog from "./pages/Blog";
+import BlogDetail from "./pages/BlogDetail";
+import AdminBlogs from "./pages/admin/Blogs";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +49,8 @@ const App = () => (
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/services" element={<Services />} />
           <Route path="/specialists" element={<Specialists />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:id" element={<BlogDetail />} />
           
           {/* User Dashboard routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>
@@ -54,7 +58,6 @@ const App = () => (
             <Route path="bookings" element={<UserBookings />} />
             <Route path="history" element={<UserHistory />} />
             <Route path="payments" element={<UserPayments />} />
-            <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<UserSettings />} />
           </Route>
 
@@ -68,7 +71,7 @@ const App = () => (
             <Route path="reports" element={<AdminReports />} />
             <Route path="transactions" element={<AdminTransactions />} />
             <Route path="settings" element={<AdminSettings />} />
-            <Route path="profile" element={<Profile />} />
+            <Route path="blogs" element={<AdminBlogs />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />

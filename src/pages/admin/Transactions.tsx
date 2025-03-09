@@ -36,6 +36,8 @@ import {
 } from "@/components/ui/pagination";
 import { Calendar, Download, Search, Filter } from "lucide-react";
 import { format } from "date-fns";
+import * as XLSX from 'xlsx';
+import { toast } from "sonner";
 
 const transactionsData = [
   {
@@ -185,12 +187,46 @@ const Transactions = () => {
     indexOfLastItem
   );
 
+  // Function to export transactions to Excel
+  const exportToExcel = () => {
+    try {
+      // Format the data for Excel
+      const excelData = filteredTransactions.map(transaction => ({
+        'ID Giao dịch': transaction.id,
+        'Ngày': format(new Date(transaction.date), "dd/MM/yyyy HH:mm"),
+        'Khách hàng': transaction.customer,
+        'Dịch vụ': transaction.service,
+        'Chuyên viên': transaction.specialist,
+        'Số tiền': transaction.amount,
+        'Trạng thái': transaction.status === 'completed' ? 'Hoàn thành' : 
+                    transaction.status === 'pending' ? 'Đang xử lý' : 
+                    transaction.status === 'failed' ? 'Thất bại' : 
+                    transaction.status === 'refunded' ? 'Hoàn tiền' : 'Không xác định',
+        'Phương thức': transaction.paymentMethod
+      }));
+
+      // Create a worksheet
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Create a workbook
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Giao dịch");
+
+      // Generate Excel file and download
+      XLSX.writeFile(workbook, "bao-cao-giao-dich.xlsx");
+      toast.success("Xuất Excel thành công!");
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      toast.error("Có lỗi khi xuất Excel!");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý giao dịch</h1>
         <div className="flex space-x-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={exportToExcel}>
             <Download className="mr-2 h-4 w-4" />
             Xuất Excel
           </Button>

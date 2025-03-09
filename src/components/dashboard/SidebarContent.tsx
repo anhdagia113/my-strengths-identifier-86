@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Users, Calendar, Settings, 
   User, ChevronDown, FilePlus, List, ShieldCheck,
-  BarChart, CreditCard, FileText
+  BarChart, CreditCard, FileText, BookOpen
 } from "lucide-react";
 import { 
   Collapsible, 
@@ -120,9 +120,9 @@ const SidebarContent = ({ user }: SidebarContentProps) => {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <Link 
-                to="/admin/specialists" 
+                to="/admin/staff" 
                 className={`pl-14 pr-6 py-2 flex items-center space-x-3 ${
-                  isActiveLink("/admin/specialists") 
+                  isActiveLink("/admin/staff") 
                     ? "bg-primary/10 text-primary" 
                     : "hover:bg-muted"
                 }`}
@@ -138,6 +138,38 @@ const SidebarContent = ({ user }: SidebarContentProps) => {
                 }`}
               >
                 <span>Lịch làm việc</span>
+              </Link>
+            </CollapsibleContent>
+          </Collapsible>
+
+          <Collapsible open={openCollapsible === 'blogs'} onOpenChange={() => toggleCollapsible('blogs')}>
+            <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between hover:bg-muted">
+              <div className="flex items-center space-x-3">
+                <BookOpen size={20} />
+                <span>Quản lý blog</span>
+              </div>
+              <ChevronDown size={16} className={`transition-transform duration-200 ${openCollapsible === 'blogs' ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <Link 
+                to="/admin/blogs" 
+                className={`pl-14 pr-6 py-2 flex items-center space-x-3 ${
+                  isActiveLink("/admin/blogs") 
+                    ? "bg-primary/10 text-primary" 
+                    : "hover:bg-muted"
+                }`}
+              >
+                <span>Danh sách bài viết</span>
+              </Link>
+              <Link 
+                to="/admin/blogs/categories" 
+                className={`pl-14 pr-6 py-2 flex items-center space-x-3 ${
+                  isActiveLink("/admin/blogs/categories") 
+                    ? "bg-primary/10 text-primary" 
+                    : "hover:bg-muted"
+                }`}
+              >
+                <span>Danh mục blog</span>
               </Link>
             </CollapsibleContent>
           </Collapsible>
@@ -193,14 +225,6 @@ const SidebarContent = ({ user }: SidebarContentProps) => {
           </SidebarNavLink>
         </>
       )}
-      
-      <SidebarNavLink 
-        to={isAdmin ? "/admin/profile" : "/dashboard/profile"} 
-        icon={<User size={20} />}
-        isActive={isActiveLink(isAdmin ? "/admin/profile" : "/dashboard/profile")}
-      >
-        Thông tin cá nhân
-      </SidebarNavLink>
       
       <SidebarNavLink 
         to={isAdmin ? "/admin/settings" : "/dashboard/settings"} 
