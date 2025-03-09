@@ -262,7 +262,7 @@ const ServicesAdmin = () => {
               <SelectValue placeholder="Lọc theo danh mục" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tất cả danh mục</SelectItem>
+              <SelectItem value="all">Tất cả danh mục</SelectItem>
               {serviceCategories.map(category => (
                 <SelectItem key={category} value={category}>{category}</SelectItem>
               ))}

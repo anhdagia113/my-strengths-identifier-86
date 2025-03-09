@@ -5,6 +5,7 @@ import { BookingFormValues } from "./schema";
 import { SERVICES } from "./constants";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
+import { Clock } from "lucide-react";
 
 interface ServiceMultiSelectProps {
   form: UseFormReturn<BookingFormValues>;
@@ -41,21 +42,33 @@ export const ServiceMultiSelect = ({ form }: ServiceMultiSelectProps) => {
             <Card>
               <CardContent className="p-4 grid gap-4">
                 {SERVICES.map((service) => (
-                  <div key={service.id} className="flex items-center space-x-3 p-2 rounded hover:bg-muted/40">
+                  <div key={service.id} className="flex items-start space-x-3 p-3 rounded hover:bg-muted/40">
                     <Checkbox
                       checked={selectedServices.includes(service.id)}
                       onCheckedChange={() => handleServiceToggle(service.id)}
                       id={`service-${service.id}`}
+                      className="mt-1"
                     />
-                    <label
-                      htmlFor={`service-${service.id}`}
-                      className="flex-1 flex justify-between text-sm cursor-pointer"
-                    >
-                      <span>{service.name}</span>
-                      <span className="font-medium">
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(service.price)}
-                      </span>
-                    </label>
+                    <div className="flex-1">
+                      <label
+                        htmlFor={`service-${service.id}`}
+                        className="flex justify-between text-sm font-medium cursor-pointer"
+                      >
+                        <span>{service.name}</span>
+                        <span className="font-medium">
+                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(service.price)}
+                        </span>
+                      </label>
+                      {service.description && (
+                        <p className="text-xs text-muted-foreground mt-1">{service.description}</p>
+                      )}
+                      {service.duration && (
+                        <div className="flex items-center text-muted-foreground text-xs mt-1">
+                          <Clock className="w-3 h-3 mr-1" />
+                          <span>{service.duration} phút</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </CardContent>

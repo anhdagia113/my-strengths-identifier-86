@@ -5,8 +5,8 @@ export interface Service {
   description: string;
   price: number;
   image?: string;
-  duration?: number; // Optional duration in minutes
-  category?: string; // Optional category
+  duration?: number; // Duration in minutes
+  category?: string; // Service category
 }
 
 // Specialist type
