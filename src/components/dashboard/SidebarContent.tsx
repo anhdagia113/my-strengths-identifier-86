@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { 
   LayoutDashboard, Users, Calendar, Settings, 
   User, ChevronDown, FilePlus, List, ShieldCheck,
@@ -12,7 +12,6 @@ import {
   CollapsibleTrigger 
 } from "@/components/ui/collapsible";
 import SidebarNavLink from "./SidebarNavLink";
-import { Link } from "react-router-dom";
 
 interface SidebarContentProps {
   user: any;
@@ -32,14 +31,15 @@ const SidebarContent = ({ user }: SidebarContentProps) => {
     setOpenCollapsible(openCollapsible === section ? null : section);
   };
 
-  const isAdmin = user.role === "admin";
+  const isAdmin = user?.role === "admin";
+  const dashboardBasePath = isAdmin ? "/admin" : "/dashboard";
 
   return (
     <div className="flex-1 py-6 space-y-1 overflow-y-auto">
       <SidebarNavLink 
-        to={isAdmin ? "/admin" : "/dashboard"} 
+        to={dashboardBasePath} 
         icon={<LayoutDashboard size={20} />} 
-        isActive={isActiveLink(isAdmin ? "/admin" : "/dashboard")}
+        isActive={isActiveLink(dashboardBasePath)}
       >
         Tổng quan
       </SidebarNavLink>
