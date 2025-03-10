@@ -135,18 +135,10 @@ export function DatabaseManagement() {
   };
 
   const getExampleData = () => {
+    // Return empty structure
     const exampleData = {
-      paymentMethods: [
-        { type: "CREDIT_CARD", name: "Visa", maskedNumber: "****1234", expiryDate: "05/25", isDefault: true },
-        { type: "CREDIT_CARD", name: "Mastercard", maskedNumber: "****5678", expiryDate: "08/24", isDefault: false }
-      ],
-      payments: [
-        { transactionId: "TX12345", amount: 450000, status: "COMPLETED", paymentMethod: "Visa ****1234", description: "Chăm sóc da cơ bản" },
-        { transactionId: "TX12346", amount: 650000, status: "COMPLETED", paymentMethod: "Mastercard ****5678", description: "Trị mụn chuyên sâu" },
-        { transactionId: "TX12347", amount: 850000, status: "COMPLETED", paymentMethod: "Visa ****1234", description: "Trẻ hóa da" },
-        { transactionId: "TX12348", amount: 350000, status: "FAILED", paymentMethod: "Mastercard ****5678", description: "Massage mặt" },
-        { transactionId: "TX12349", amount: 250000, status: "REFUNDED", paymentMethod: "Visa ****1234", description: "Tẩy trang chuyên sâu" }
-      ]
+      paymentMethods: [],
+      payments: []
     };
     setImportData(JSON.stringify(exampleData, null, 2));
   };
