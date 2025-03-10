@@ -16,38 +16,6 @@ Dự án được tổ chức thành hai phần chính:
 - Node.js 18+ và npm/yarn
 - MySQL 8.0
 
-## Cách khởi chạy nhanh (Tự động)
-
-### Sử dụng script tự động
-
-Dự án cung cấp script tự động để khởi chạy cả backend và frontend cùng lúc:
-
-#### Trên Linux/macOS:
-
-1. Cấp quyền thực thi cho script:
-   ```bash
-   chmod +x start-app.sh
-   ```
-
-2. Chạy script:
-   ```bash
-   ./start-app.sh
-   ```
-
-#### Trên Windows:
-
-1. Chạy script bằng cách nhấp đúp chuột vào file `start-app.cmd` hoặc qua Command Prompt:
-   ```
-   start-app.cmd
-   ```
-
-Script sẽ tự động:
-- Kiểm tra các yêu cầu hệ thống
-- Khởi động backend Spring Boot
-- Khởi động frontend React
-- Hiển thị URL để truy cập ứng dụng
-- Quản lý logs và tự động dừng tất cả các dịch vụ khi thoát
-
 ## Cài đặt và chạy thủ công
 
 ### Bước 1: Cài đặt cơ sở dữ liệu MySQL
