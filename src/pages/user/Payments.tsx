@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -27,88 +28,29 @@ import {
   Plus,
   Trash2,
   CreditCard as CreditCardIcon,
-  Building, // Using Building instead of Bank which doesn't exist
+  Building,
+  RefreshCw
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { PAYMENT_STATUSES } from "@/components/booking/constants";
-import { PaymentMethod, Transaction } from "@/types/service";
 import { 
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-
-// Sample data for payment methods and transactions
-const initialPaymentMethods: PaymentMethod[] = [
-  {
-    id: "1",
-    type: "credit_card",
-    name: "Visa ****1234",
-    expiry: "05/25",
-    isDefault: true,
-  },
-  {
-    id: "2",
-    type: "credit_card",
-    name: "Mastercard ****5678",
-    expiry: "08/24",
-    isDefault: false,
-  },
-];
-
-const transactions: Transaction[] = [
-  {
-    id: "TX12345",
-    date: "2023-06-15T09:30:00",
-    service: "Chăm sóc da cơ bản",
-    amount: 450000,
-    status: PAYMENT_STATUSES.COMPLETED,
-    paymentMethod: "Visa ****1234",
-  },
-  {
-    id: "TX12346",
-    date: "2023-05-20T14:00:00",
-    service: "Trị mụn chuyên sâu",
-    amount: 650000,
-    status: PAYMENT_STATUSES.COMPLETED,
-    paymentMethod: "Mastercard ****5678",
-  },
-  {
-    id: "TX12347",
-    date: "2023-04-10T10:15:00",
-    service: "Trẻ hóa da",
-    amount: 850000,
-    status: PAYMENT_STATUSES.COMPLETED,
-    paymentMethod: "Visa ****1234",
-  },
-  {
-    id: "TX12348",
-    date: "2023-03-05T16:30:00",
-    service: "Massage mặt",
-    amount: 350000,
-    status: PAYMENT_STATUSES.FAILED,
-    paymentMethod: "Mastercard ****5678",
-  },
-  {
-    id: "TX12349",
-    date: "2023-02-18T11:00:00",
-    service: "Tẩy trang chuyên sâu",
-    amount: 250000,
-    status: PAYMENT_STATUSES.REFUNDED,
-    paymentMethod: "Visa ****1234",
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { Transaction } from "@/api/services/transaction.service";
+import TransactionService from "@/api/services/transaction.service";
+import { PaymentMethod } from "@/types/service";
 
 const UserPayments = () => {
   const [activeTab, setActiveTab] = useState("payment_methods");
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(initialPaymentMethods);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isAddPaymentDialogOpen, setIsAddPaymentDialogOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionDetailOpen, setIsTransactionDetailOpen] = useState(false);
@@ -121,15 +63,50 @@ const UserPayments = () => {
     cvv: "",
   });
 
+  const { 
+    data: transactions, 
+    isLoading: transactionsLoading, 
+    isError: transactionsError,
+    refetch: refetchTransactions
+  } = useQuery({
+    queryKey: ['userTransactions'],
+    queryFn: TransactionService.getUserTransactions
+  });
+
+  // Placeholder for payment methods (to be replaced with actual API)
+  useEffect(() => {
+    const loadPaymentMethods = () => {
+      // Temporarily using static data until payment methods API is ready
+      setPaymentMethods([
+        {
+          id: "1",
+          type: "credit_card",
+          name: "Visa ****1234",
+          expiry: "05/25",
+          isDefault: true,
+        },
+        {
+          id: "2",
+          type: "credit_card",
+          name: "Mastercard ****5678",
+          expiry: "08/24",
+          isDefault: false,
+        }
+      ]);
+    };
+    
+    loadPaymentMethods();
+  }, []);
+
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case PAYMENT_STATUSES.COMPLETED:
+      case "COMPLETED":
         return <Badge className="bg-green-500">Thành công</Badge>;
-      case PAYMENT_STATUSES.PENDING:
+      case "PENDING":
         return <Badge className="bg-yellow-500">Đang xử lý</Badge>;
-      case PAYMENT_STATUSES.FAILED:
+      case "FAILED":
         return <Badge className="bg-red-500">Thất bại</Badge>;
-      case PAYMENT_STATUSES.REFUNDED:
+      case "REFUNDED":
         return <Badge className="bg-purple-500">Hoàn tiền</Badge>;
       default:
         return <Badge>Không xác định</Badge>;
@@ -160,7 +137,7 @@ const UserPayments = () => {
     
     // Create masked card number
     const last4 = newPayment.cardNumber.slice(-4);
-    const cardType = newPayment.type === "credit_card" ? "Visa" : "Building"; // Changed from Bank to Building
+    const cardType = newPayment.type === "credit_card" ? "Visa" : "Building";
     const maskedNumber = `${cardType} ****${last4}`;
     
     // Create new payment method
@@ -335,64 +312,96 @@ const UserPayments = () => {
 
         <TabsContent value="transactions">
           <Card>
-            <CardHeader>
-              <CardTitle>Lịch sử giao dịch</CardTitle>
-              <CardDescription>
-                Xem lại tất cả các giao dịch thanh toán của bạn
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Lịch sử giao dịch</CardTitle>
+                <CardDescription>
+                  Xem lại tất cả các giao dịch thanh toán của bạn
+                </CardDescription>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => refetchTransactions()}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Làm mới
+              </Button>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID Giao dịch</TableHead>
-                      <TableHead>Ngày</TableHead>
-                      <TableHead>Dịch vụ</TableHead>
-                      <TableHead>Số tiền</TableHead>
-                      <TableHead>Trạng thái</TableHead>
-                      <TableHead>Phương thức</TableHead>
-                      <TableHead className="text-right">Thao tác</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {transactions.map((transaction) => (
-                      <TableRow key={transaction.id}>
-                        <TableCell className="font-medium">
-                          {transaction.id}
-                        </TableCell>
-                        <TableCell>
-                          {format(
-                            new Date(transaction.date),
-                            "dd/MM/yyyy HH:mm"
-                          )}
-                        </TableCell>
-                        <TableCell>{transaction.service}</TableCell>
-                        <TableCell>
-                          {new Intl.NumberFormat("vi-VN", {
-                            style: "currency",
-                            currency: "VND",
-                          }).format(transaction.amount)}
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(transaction.status)}
-                        </TableCell>
-                        <TableCell>{transaction.paymentMethod}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Xem chi tiết"
-                            onClick={() => handleViewTransaction(transaction)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+              {transactionsLoading ? (
+                <div className="flex justify-center items-center py-10">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  <span className="ml-2">Đang tải dữ liệu...</span>
+                </div>
+              ) : transactionsError ? (
+                <div className="text-center py-10">
+                  <AlertCircle className="h-10 w-10 text-destructive mx-auto mb-2" />
+                  <p className="text-lg font-medium text-destructive">Không thể tải dữ liệu</p>
+                  <p className="text-muted-foreground mb-4">Đã xảy ra lỗi khi tải giao dịch</p>
+                  <Button onClick={() => refetchTransactions()}>Thử lại</Button>
+                </div>
+              ) : (
+                <div className="rounded-md border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID Giao dịch</TableHead>
+                        <TableHead>Ngày</TableHead>
+                        <TableHead>Dịch vụ</TableHead>
+                        <TableHead>Số tiền</TableHead>
+                        <TableHead>Trạng thái</TableHead>
+                        <TableHead>Phương thức</TableHead>
+                        <TableHead className="text-right">Thao tác</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {transactions && transactions.length > 0 ? (
+                        transactions.map((transaction) => (
+                          <TableRow key={transaction.id}>
+                            <TableCell className="font-medium">
+                              {transaction.transactionId}
+                            </TableCell>
+                            <TableCell>
+                              {format(
+                                new Date(transaction.paymentDate),
+                                "dd/MM/yyyy HH:mm"
+                              )}
+                            </TableCell>
+                            <TableCell>{transaction.description}</TableCell>
+                            <TableCell>
+                              {new Intl.NumberFormat("vi-VN", {
+                                style: "currency",
+                                currency: "VND",
+                              }).format(transaction.amount)}
+                            </TableCell>
+                            <TableCell>
+                              {getStatusBadge(transaction.status)}
+                            </TableCell>
+                            <TableCell>{transaction.paymentMethod}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title="Xem chi tiết"
+                                onClick={() => handleViewTransaction(transaction)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-6">
+                            Bạn chưa có giao dịch nào
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -419,49 +428,57 @@ const UserPayments = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {transactions
-                      .filter((t) => t.status === PAYMENT_STATUSES.COMPLETED)
-                      .map((transaction, index) => (
-                        <TableRow key={transaction.id}>
-                          <TableCell className="font-medium">
-                            INV-{2023}-{(index + 1).toString().padStart(4, "0")}
-                          </TableCell>
-                          <TableCell>
-                            {format(
-                              new Date(transaction.date),
-                              "dd/MM/yyyy"
-                            )}
-                          </TableCell>
-                          <TableCell>{transaction.service}</TableCell>
-                          <TableCell>
-                            {new Intl.NumberFormat("vi-VN", {
-                              style: "currency",
-                              currency: "VND",
-                            }).format(transaction.amount)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className="bg-green-500">Đã xuất</Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end space-x-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                title="Xem hóa đơn"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                title="Tải xuống"
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                    {transactions && transactions.filter(t => t.status === "COMPLETED").length > 0 ? (
+                      transactions
+                        .filter((t) => t.status === "COMPLETED")
+                        .map((transaction, index) => (
+                          <TableRow key={transaction.id}>
+                            <TableCell className="font-medium">
+                              INV-{new Date().getFullYear()}-{(index + 1).toString().padStart(4, "0")}
+                            </TableCell>
+                            <TableCell>
+                              {format(
+                                new Date(transaction.paymentDate),
+                                "dd/MM/yyyy"
+                              )}
+                            </TableCell>
+                            <TableCell>{transaction.description}</TableCell>
+                            <TableCell>
+                              {new Intl.NumberFormat("vi-VN", {
+                                style: "currency",
+                                currency: "VND",
+                              }).format(transaction.amount)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-500">Đã xuất</Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end space-x-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  title="Xem hóa đơn"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  title="Tải xuống"
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-6">
+                          Bạn chưa có hóa đơn nào
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -566,7 +583,7 @@ const UserPayments = () => {
                   onClick={() => setNewPayment({...newPayment, type: "bank"})}
                   className="flex-1"
                 >
-                  <Building className="mr-2 h-4 w-4" /> {/* Changed from Bank to Building */}
+                  <Building className="mr-2 h-4 w-4" />
                   Tài khoản ngân hàng
                 </Button>
               </div>
@@ -636,17 +653,17 @@ const UserPayments = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">ID Giao dịch</p>
-                  <p className="font-medium">{selectedTransaction.id}</p>
+                  <p className="font-medium">{selectedTransaction.transactionId}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Ngày</p>
                   <p className="font-medium">
-                    {format(new Date(selectedTransaction.date), "dd/MM/yyyy HH:mm")}
+                    {format(new Date(selectedTransaction.paymentDate), "dd/MM/yyyy HH:mm")}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Dịch vụ</p>
-                  <p className="font-medium">{selectedTransaction.service}</p>
+                  <p className="font-medium">{selectedTransaction.description}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Phương thức</p>

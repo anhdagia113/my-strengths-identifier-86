@@ -1,43 +1,64 @@
 
 import apiClient from '../apiClient';
-import { Transaction } from '../models/payment.model';
+import { PaymentMethod, PaymentMethodRequest, Transaction, CreateTransactionRequest } from '../models/payment.model';
 
-export const PaymentService = {
-  getAllTransactions: async (): Promise<Transaction[]> => {
-    const response = await apiClient.get('/api/payments');
+const PaymentService = {
+  // Payment methods
+  getUserPaymentMethods: async (): Promise<PaymentMethod[]> => {
+    const response = await apiClient.get('/api/payment-methods');
     return response.data;
   },
 
-  getTransactionById: async (id: string): Promise<Transaction> => {
-    const response = await apiClient.get(`/api/payments/${id}`);
+  getPaymentMethodById: async (id: string): Promise<PaymentMethod> => {
+    const response = await apiClient.get(`/api/payment-methods/${id}`);
     return response.data;
   },
 
-  createTransaction: async (transaction: Omit<Transaction, 'id'>): Promise<Transaction> => {
-    const response = await apiClient.post('/api/payments', transaction);
+  createPaymentMethod: async (paymentMethod: PaymentMethodRequest): Promise<PaymentMethod> => {
+    const response = await apiClient.post('/api/payment-methods', paymentMethod);
     return response.data;
   },
 
-  updateTransaction: async (id: string, transaction: Partial<Transaction>): Promise<Transaction> => {
-    const response = await apiClient.put(`/api/payments/${id}`, transaction);
+  updatePaymentMethod: async (id: string, paymentMethod: Partial<PaymentMethodRequest>): Promise<PaymentMethod> => {
+    const response = await apiClient.put(`/api/payment-methods/${id}`, paymentMethod);
     return response.data;
   },
 
-  deleteTransaction: async (id: string): Promise<void> => {
-    await apiClient.delete(`/api/payments/${id}`);
+  deletePaymentMethod: async (id: string): Promise<void> => {
+    await apiClient.delete(`/api/payment-methods/${id}`);
   },
 
-  exportTransactionsToExcel: async (): Promise<Blob> => {
-    const response = await apiClient.get('/api/payments/export/excel', {
-      responseType: 'blob'
+  setDefaultPaymentMethod: async (id: string): Promise<PaymentMethod> => {
+    const response = await apiClient.put(`/api/payment-methods/${id}/default`);
+    return response.data;
+  },
+
+  // Payments/Transactions
+  createTransaction: async (transaction: CreateTransactionRequest): Promise<Transaction> => {
+    const response = await apiClient.post('/api/payments/user', transaction);
+    return response.data;
+  },
+
+  getUserWalletBalance: async (): Promise<number> => {
+    const response = await apiClient.get('/api/wallet/balance');
+    return response.data.balance;
+  },
+
+  depositToWallet: async (amount: number, paymentMethodId: string): Promise<Transaction> => {
+    const response = await apiClient.post('/api/wallet/deposit', { 
+      amount, 
+      paymentMethodId 
     });
     return response.data;
   },
 
-  exportTransactionsToCSV: async (): Promise<Blob> => {
-    const response = await apiClient.get('/api/payments/export/csv', {
-      responseType: 'blob'
+  withdrawFromWallet: async (amount: number, paymentMethodId: string): Promise<Transaction> => {
+    const response = await apiClient.post('/api/wallet/withdraw', { 
+      amount, 
+      paymentMethodId 
     });
     return response.data;
   }
 };
+
+export default PaymentService;

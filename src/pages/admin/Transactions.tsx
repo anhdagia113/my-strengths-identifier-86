@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
 import { useReactToPrint } from 'react-to-print';
 import * as XLSX from 'xlsx';
 import { toast } from "sonner";
@@ -62,11 +61,16 @@ const AdminTransactions = () => {
   const printRef = useRef<HTMLDivElement>(null);
 
   // Fetch transactions from backend
-  const { data: transactions, isLoading, isError } = useQuery({
+  const { data: transactions, isLoading, isError, refetch } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
-      const response = await axios.get<Transaction[]>('/api/payments');
-      return response.data;
+      try {
+        const response = await axios.get<Transaction[]>('/api/payments');
+        return response.data;
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+        throw error;
+      }
     }
   });
 
@@ -92,6 +96,15 @@ const AdminTransactions = () => {
     applyFilters(searchQuery, statusFilter, range);
   };
 
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setDateRange({ from: undefined, to: undefined });
+    if (transactions) {
+      setFilteredTransactions(transactions);
+    }
+  };
+
   const applyFilters = (
     query: string, 
     status: "all" | "COMPLETED" | "PENDING" | "FAILED" | "REFUNDED",
@@ -104,8 +117,8 @@ const AdminTransactions = () => {
     // Apply search filter
     if (query.trim() !== "") {
       filtered = filtered.filter((transaction) =>
-        transaction.description.toLowerCase().includes(query.toLowerCase()) ||
-        transaction.transactionId.toLowerCase().includes(query.toLowerCase())
+        transaction.description?.toLowerCase().includes(query.toLowerCase()) ||
+        transaction.transactionId?.toLowerCase().includes(query.toLowerCase())
       );
     }
     
@@ -133,6 +146,8 @@ const AdminTransactions = () => {
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
+    documentTitle: "Danh sách giao dịch",
+    onAfterPrint: () => toast.success("Đã in báo cáo thành công!"),
   });
 
   const handleExportExcel = () => {
@@ -214,11 +229,21 @@ const AdminTransactions = () => {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center items-center min-h-[400px]">Đang tải dữ liệu...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-2">Đang tải dữ liệu...</span>
+      </div>
+    );
   }
 
   if (isError) {
-    return <div className="flex justify-center items-center min-h-[400px]">Đã xảy ra lỗi khi tải dữ liệu</div>;
+    return (
+      <div className="flex flex-col justify-center items-center min-h-[400px]">
+        <div className="text-red-500 mb-2">Đã xảy ra lỗi khi tải dữ liệu</div>
+        <Button onClick={() => refetch()}>Thử lại</Button>
+      </div>
+    );
   }
 
   return (
@@ -293,6 +318,9 @@ const AdminTransactions = () => {
                 </PopoverContent>
               </Popover>
             </div>
+            <Button onClick={handleClearFilters} variant="outline">
+              Xóa bộ lọc
+            </Button>
             <Button onClick={handleExportExcel}>
               <FileDown className="mr-2 h-4 w-4" />
               Xuất Excel
