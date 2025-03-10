@@ -1,12 +1,12 @@
 
 # Beauty Salon API Server
 
-This is the backend API server for the Beauty Salon application, built with Spring Boot and Java 17.
+This is the backend API server for the Beauty Salon application, built with Spring Boot and Java 11.
 
 ## Technology Stack
 
-- Java 17
-- Spring Boot 3.2.x
+- Java 11
+- Spring Boot 2.7.18
 - Spring Security with JWT
 - Spring Data JPA
 - PostgreSQL
@@ -46,7 +46,7 @@ backend/
 
 ### Prerequisites
 
-- Java Development Kit (JDK) 17
+- Java Development Kit (JDK) 11
 - Maven 3.8+
 - PostgreSQL 13+
 
@@ -119,3 +119,6 @@ The following environment variables can be set:
 - `JWT_SECRET`: Secret key for JWT token signing
 - `JWT_EXPIRATION`: Token expiration time in milliseconds
 
+## Java Version Compatibility
+
+This project is configured to work with Java 11. If you're using a newer version of Java, you might need to adjust the Maven configuration in the `pom.xml` file.
