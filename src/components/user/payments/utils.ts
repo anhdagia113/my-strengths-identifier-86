@@ -6,14 +6,14 @@ import React from "react";
 export const getStatusBadge = (status: string): JSX.Element => {
   switch (status) {
     case "COMPLETED":
-      return <Badge className="bg-green-500">Thành công</Badge>;
+      return React.createElement(Badge, { className: "bg-green-500" }, "Thành công");
     case "PENDING":
-      return <Badge className="bg-yellow-500">Đang xử lý</Badge>;
+      return React.createElement(Badge, { className: "bg-yellow-500" }, "Đang xử lý");
     case "FAILED":
-      return <Badge className="bg-red-500">Thất bại</Badge>;
+      return React.createElement(Badge, { className: "bg-red-500" }, "Thất bại");
     case "REFUNDED":
-      return <Badge className="bg-purple-500">Hoàn tiền</Badge>;
+      return React.createElement(Badge, { className: "bg-purple-500" }, "Hoàn tiền");
     default:
-      return <Badge>Không xác định</Badge>;
+      return React.createElement(Badge, {}, "Không xác định");
   }
 };
