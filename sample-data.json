@@ -1,12 +1,134 @@
 
 {
-  "categories": [],
-  "services": [],
-  "specialists": [],
-  "schedules": [],
-  "paymentMethods": [],
-  "payments": [],
-  "users": [],
-  "blogs": [],
-  "blogCategories": []
+  "categories": [
+    {
+      "name": "Facial Treatments",
+      "description": "Advanced facial treatments for all skin types",
+      "icon": "face"
+    },
+    {
+      "name": "Massage",
+      "description": "Relaxing massage therapies",
+      "icon": "spa"
+    },
+    {
+      "name": "Hair Care",
+      "description": "Professional hair care services",
+      "icon": "scissors"
+    },
+    {
+      "name": "Nail Services",
+      "description": "Manicure and pedicure treatments",
+      "icon": "nail"
+    }
+  ],
+  "services": [
+    {
+      "name": "Classic Facial",
+      "description": "Deep cleansing facial treatment suitable for all skin types",
+      "price": 45.00,
+      "duration": 60,
+      "image": "classic-facial.jpg",
+      "isActive": true,
+      "categoryId": 1
+    },
+    {
+      "name": "Swedish Massage",
+      "description": "Relaxing full body massage to relieve tension",
+      "price": 60.00,
+      "duration": 60,
+      "image": "swedish-massage.jpg",
+      "isActive": true,
+      "categoryId": 2
+    },
+    {
+      "name": "Haircut & Style",
+      "description": "Professional haircut with styling",
+      "price": 35.00,
+      "duration": 45,
+      "image": "haircut.jpg",
+      "isActive": true,
+      "categoryId": 3
+    }
+  ],
+  "specialists": [
+    {
+      "name": "Maria Garcia",
+      "role": "Senior Beautician",
+      "experience": "8 years",
+      "bio": "Specialized in advanced facial treatments and skincare consultations",
+      "image": "maria.jpg",
+      "isActive": true
+    },
+    {
+      "name": "David Kim",
+      "role": "Massage Therapist",
+      "experience": "10 years",
+      "bio": "Expert in therapeutic and relaxation massage techniques",
+      "image": "david.jpg",
+      "isActive": true
+    }
+  ],
+  "schedules": [
+    {
+      "specialistId": 1,
+      "date": "2023-06-15",
+      "slots": ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00"]
+    },
+    {
+      "specialistId": 2,
+      "date": "2023-06-15",
+      "slots": ["09:30", "10:30", "11:30", "13:30", "14:30", "15:30"]
+    }
+  ],
+  "paymentMethods": [
+    {
+      "type": "CREDIT_CARD",
+      "name": "Visa ending in 4242",
+      "maskedNumber": "XXXX-XXXX-XXXX-4242",
+      "expiryDate": "05/25",
+      "isDefault": true,
+      "userId": 1
+    }
+  ],
+  "payments": [
+    {
+      "transactionId": "TXN123456",
+      "amount": 105.00,
+      "status": "COMPLETED",
+      "paymentMethod": "CREDIT_CARD",
+      "description": "Payment for services on 2023-06-10",
+      "userId": 1
+    }
+  ],
+  "users": [
+    {
+      "email": "customer@example.com",
+      "password": "$2a$10$ixlPY3AAd4ty1l6E2IsQ9OFZi2ba9ZQE0bP7RFcGIWNhyFrrT3YUi",
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "ROLE_USER"
+    }
+  ],
+  "blogs": [
+    {
+      "title": "Top 10 Skincare Tips for Summer",
+      "excerpt": "Protect your skin during the hot summer months with these expert tips",
+      "content": "During summer, your skin needs extra protection from UV rays and heat...",
+      "image": "summer-skincare.jpg",
+      "author": "Maria Garcia",
+      "date": "2023-05-20",
+      "categoryId": 1
+    }
+  ],
+  "blogCategories": [
+    {
+      "name": "Skincare",
+      "description": "Articles about skincare routines and tips"
+    },
+    {
+      "name": "Hair Care",
+      "description": "Tips and advice for healthy hair"
+    }
+  ]
 }

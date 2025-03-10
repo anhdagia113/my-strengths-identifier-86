@@ -12,7 +12,7 @@ Dự án được tổ chức thành hai phần chính:
 
 ## Yêu cầu hệ thống
 
-- Java 11 (LTS)
+- Java 17 (LTS)
 - Node.js 18+ và npm/yarn
 - MySQL 8.0
 
@@ -44,8 +44,8 @@ Dự án được tổ chức thành hai phần chính:
    - Điều chỉnh các thông số kết nối database nếu cần:
      ```properties
      spring.datasource.url=jdbc:mysql://localhost:3306/beautysalon?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-     spring.datasource.username=beautysalon_user
-     spring.datasource.password=password
+     spring.datasource.username=root
+     spring.datasource.password=
      ```
 
 5. Chạy ứng dụng Spring Boot trong IntelliJ:
@@ -94,8 +94,8 @@ Dự án được tổ chức thành hai phần chính:
 
 1. Mở IntelliJ IDEA và vào **File > Project Structure**
 2. Trong phần **Project Settings > Project**:
-   - Chọn Project SDK: 11 (hoặc cao hơn)
-   - Project language level: 11
+   - Chọn Project SDK: 17
+   - Project language level: 17
 3. Nhấn **Apply** và **OK**
 
 ### Cấu hình Maven
