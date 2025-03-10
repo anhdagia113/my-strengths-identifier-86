@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Card, 
   CardContent, 
@@ -34,10 +34,17 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Calendar, Download, Search, Filter } from "lucide-react";
-import { format } from "date-fns";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarIcon, Download, Search, Filter } from "lucide-react";
+import { format, isWithinInterval, parseISO } from "date-fns";
 import * as XLSX from 'xlsx';
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const transactionsData = [
   {
@@ -146,23 +153,46 @@ const Transactions = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage] = useState(1);
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: undefined,
+    to: undefined,
+  });
+  const [filteredTransactions, setFilteredTransactions] = useState(transactionsData);
   const itemsPerPage = 10;
 
-  // Apply filters
-  const filteredTransactions = transactionsData.filter((transaction) => {
-    // Apply text search
-    const matchesSearch =
-      searchTerm === "" ||
-      transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.service.toLowerCase().includes(searchTerm.toLowerCase());
+  // Apply filters whenever any filter changes
+  useEffect(() => {
+    // Apply filters
+    const filtered = transactionsData.filter((transaction) => {
+      // Apply text search
+      const matchesSearch =
+        searchTerm === "" ||
+        transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transaction.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transaction.service.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Apply status filter
-    const matchesStatus =
-      statusFilter === "all" || transaction.status === statusFilter;
+      // Apply status filter
+      const matchesStatus =
+        statusFilter === "all" || transaction.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
-  });
+      // Apply date filter
+      let matchesDate = true;
+      if (dateRange.from && dateRange.to) {
+        const transactionDate = parseISO(transaction.date);
+        matchesDate = isWithinInterval(transactionDate, {
+          start: dateRange.from,
+          end: dateRange.to,
+        });
+      }
+
+      return matchesSearch && matchesStatus && matchesDate;
+    });
+
+    setFilteredTransactions(filtered);
+  }, [searchTerm, statusFilter, dateRange]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -221,6 +251,19 @@ const Transactions = () => {
     }
   };
 
+  // Apply date filter
+  const handleDateRangeApply = () => {
+    if (dateRange.from && dateRange.to) {
+      toast.success(`Đã lọc giao dịch từ ${format(dateRange.from, "dd/MM/yyyy")} đến ${format(dateRange.to, "dd/MM/yyyy")}`);
+    }
+  };
+
+  // Clear date filter
+  const clearDateFilter = () => {
+    setDateRange({ from: undefined, to: undefined });
+    toast.success("Đã xóa bộ lọc ngày");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -230,10 +273,47 @@ const Transactions = () => {
             <Download className="mr-2 h-4 w-4" />
             Xuất Excel
           </Button>
-          <Button variant="outline">
-            <Calendar className="mr-2 h-4 w-4" />
-            Lọc theo ngày
-          </Button>
+          
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateRange.from && dateRange.to ? (
+                  <>
+                    {format(dateRange.from, "dd/MM/yyyy")} -{" "}
+                    {format(dateRange.to, "dd/MM/yyyy")}
+                  </>
+                ) : (
+                  <span>Lọc theo ngày</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                initialFocus
+                mode="range"
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={2}
+                className={cn("p-3 pointer-events-auto")}
+              />
+              <div className="flex items-center p-3 border-t border-border">
+                {dateRange.from && dateRange.to && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={clearDateFilter}
+                    className="mr-auto"
+                  >
+                    Xóa bộ lọc
+                  </Button>
+                )}
+                <Button size="sm" onClick={handleDateRangeApply}>
+                  Áp dụng
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 

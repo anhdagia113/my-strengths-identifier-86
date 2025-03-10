@@ -15,14 +15,12 @@ import {
   FileUp,
   RefreshCcw,
   DatabaseBackup,
-  Languages,
-  Shield,
   Eye,
   EyeOff,
-  CheckCircle,
   Lock,
   Save,
-  X
+  X,
+  Check
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -47,7 +45,9 @@ const AdminSettings = () => {
     new: '',
     confirm: ''
   });
-  
+
+  const [backupName, setBackupName] = useState(`backup_${new Date().toISOString().split('T')[0]}.zip`);
+  const [selectedBackupFile, setSelectedBackupFile] = useState<File | null>(null);
   const [showSmtpPassword, setShowSmtpPassword] = useState(false);
 
   const handleSiteSettingChange = (
@@ -76,10 +76,81 @@ const AdminSettings = () => {
   };
 
   const handleBackupData = () => {
+    // Create a simple backup file with dummy data
+    const backupData = {
+      settings: siteSettings,
+      date: new Date().toISOString(),
+      version: "1.0.0"
+    };
+    
+    const jsonData = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create a download link and trigger it
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = backupName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
     toast.success("Bản sao lưu đã được tạo thành công");
   };
 
+  const handleRestoreBackup = () => {
+    if (!selectedBackupFile) {
+      toast.error("Vui lòng chọn file sao lưu để khôi phục");
+      return;
+    }
+
+    // Read the file
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const backupData = JSON.parse(content);
+        
+        // Restore settings
+        if (backupData.settings) {
+          setSiteSettings(backupData.settings);
+          toast.success("Đã khôi phục cài đặt từ bản sao lưu");
+        } else {
+          toast.error("File sao lưu không chứa dữ liệu cài đặt hợp lệ");
+        }
+      } catch (error) {
+        toast.error("Không thể đọc file sao lưu. File có thể bị hỏng.");
+        console.error("Restore error:", error);
+      }
+    };
+    
+    reader.readAsText(selectedBackupFile);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedBackupFile(e.target.files[0]);
+    }
+  };
+
   const handleResetSettings = () => {
+    const defaultSettings = {
+      siteName: "Beauty Spa",
+      siteDescription: "Nơi chăm sóc sắc đẹp hoàn hảo",
+      contactEmail: "contact@beautyspa.vn",
+      contactPhone: "0901234567",
+      address: "123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh",
+      enableBooking: true,
+      enableRegistration: true,
+      maintenanceMode: false,
+      smtpHost: "smtp.example.com",
+      smtpPort: "587",
+      smtpUser: "noreply@beautyspa.vn",
+      smtpPassword: "●●●●●●●●●●"
+    };
+    
+    setSiteSettings(defaultSettings);
     toast.success("Cài đặt đã được đặt lại về mặc định");
   };
 
@@ -118,7 +189,6 @@ const AdminSettings = () => {
           <TabsTrigger value="general">Tổng quan</TabsTrigger>
           <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="security">Bảo mật</TabsTrigger>
-          <TabsTrigger value="appearance">Giao diện</TabsTrigger>
           <TabsTrigger value="backup">Sao lưu & Phục hồi</TabsTrigger>
         </TabsList>
 
@@ -417,62 +487,8 @@ const AdminSettings = () => {
               </div>
 
               <Button className="gap-2">
-                <Shield size={16} />
+                <Save size={16} />
                 Lưu thiết lập bảo mật
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="appearance">
-          <Card>
-            <CardHeader>
-              <CardTitle>Giao diện</CardTitle>
-              <CardDescription>
-                Tùy chỉnh giao diện và ngôn ngữ hệ thống
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Chế độ hiển thị</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  <Button variant="outline" className="justify-start">
-                    Sáng
-                  </Button>
-                  <Button variant="outline" className="justify-start">
-                    Tối
-                  </Button>
-                  <Button variant="default" className="justify-start">
-                    Hệ thống
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Ngôn ngữ</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  <Button variant="default" className="justify-start">
-                    Tiếng Việt
-                  </Button>
-                  <Button variant="outline" className="justify-start">
-                    Tiếng Anh
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Màu chủ đạo</Label>
-                <div className="grid grid-cols-4 gap-2">
-                  <div className="h-10 bg-purple-500 rounded-md cursor-pointer border-2 border-transparent hover:border-gray-400"></div>
-                  <div className="h-10 bg-blue-500 rounded-md cursor-pointer border-2 border-transparent hover:border-gray-400"></div>
-                  <div className="h-10 bg-green-500 rounded-md cursor-pointer border-2 border-transparent hover:border-gray-400"></div>
-                  <div className="h-10 bg-pink-500 rounded-md cursor-pointer border-2 border-gray-400 hover:border-gray-600"></div>
-                </div>
-              </div>
-
-              <Button className="mt-4 gap-2">
-                <Settings size={16} />
-                Lưu cài đặt giao diện
               </Button>
             </CardContent>
           </Card>
@@ -492,15 +508,26 @@ const AdminSettings = () => {
                 <p className="text-sm text-muted-foreground">
                   Tạo bản sao lưu của tất cả dữ liệu trong hệ thống
                 </p>
-                <div className="flex items-center gap-4">
-                  <Button onClick={handleBackupData} className="gap-2">
-                    <DatabaseBackup className="h-4 w-4" />
-                    Tạo bản sao lưu
-                  </Button>
-                  <Button variant="outline" className="gap-2">
-                    <FileDown className="h-4 w-4" />
-                    Tải xuống bản sao lưu
-                  </Button>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <Label htmlFor="backup-name">Tên file sao lưu</Label>
+                    <Input 
+                      id="backup-name" 
+                      value={backupName}
+                      onChange={(e) => setBackupName(e.target.value)}
+                      className="max-w-xs"
+                    />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Button onClick={handleBackupData} className="gap-2">
+                      <DatabaseBackup className="h-4 w-4" />
+                      Tạo bản sao lưu
+                    </Button>
+                    <Button variant="outline" className="gap-2" onClick={handleBackupData}>
+                      <FileDown className="h-4 w-4" />
+                      Tải xuống bản sao lưu
+                    </Button>
+                  </div>
                 </div>
               </div>
 
@@ -511,13 +538,31 @@ const AdminSettings = () => {
                 </p>
                 <div className="flex space-x-2">
                   <div className="flex-1">
-                    <Input type="file" className="border p-2" />
+                    <Input 
+                      type="file" 
+                      className="border p-2" 
+                      onChange={handleFileChange}
+                      accept=".json,.zip"
+                    />
                   </div>
-                  <Button variant="outline" className="gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="gap-2"
+                    onClick={handleRestoreBackup}
+                    disabled={!selectedBackupFile}
+                  >
                     <FileUp className="h-4 w-4" />
                     Phục hồi
                   </Button>
                 </div>
+                {selectedBackupFile && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span>
+                      Đã chọn: {selectedBackupFile.name} ({Math.round(selectedBackupFile.size / 1024)} KB)
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -559,7 +604,7 @@ const AdminSettings = () => {
                     <RefreshCcw className="h-4 w-4" />
                     Đặt lại cài đặt
                   </Button>
-                  <Button variant="destructive" className="gap-2">
+                  <Button variant="destructive" className="gap-2" onClick={() => toast.error("Chức năng này đã bị vô hiệu hóa vì lý do an toàn")}>
                     <X className="h-4 w-4" />
                     Xóa tất cả dữ liệu
                   </Button>

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -44,33 +44,33 @@ import {
   BarChart2,
   CircleHelp
 } from "lucide-react";
-import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
+import { format, subDays, startOfMonth, endOfMonth, isWithinInterval, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { utils, writeFile } from "xlsx";
 
 // Mock data for reports
 const revenueData = [
-  { name: 'T1', revenue: 5000000 },
-  { name: 'T2', revenue: 7200000 },
-  { name: 'T3', revenue: 6800000 },
-  { name: 'T4', revenue: 9200000 },
-  { name: 'T5', revenue: 8700000 },
-  { name: 'T6', revenue: 12000000 },
-  { name: 'T7', revenue: 10500000 },
-  { name: 'T8', revenue: 9800000 },
-  { name: 'T9', revenue: 11200000 },
-  { name: 'T10', revenue: 13500000 },
-  { name: 'T11', revenue: 12800000 },
-  { name: 'T12', revenue: 15000000 },
+  { name: 'T1', revenue: 5000000, date: '2023-01-15' },
+  { name: 'T2', revenue: 7200000, date: '2023-02-15' },
+  { name: 'T3', revenue: 6800000, date: '2023-03-15' },
+  { name: 'T4', revenue: 9200000, date: '2023-04-15' },
+  { name: 'T5', revenue: 8700000, date: '2023-05-15' },
+  { name: 'T6', revenue: 12000000, date: '2023-06-15' },
+  { name: 'T7', revenue: 10500000, date: '2023-07-15' },
+  { name: 'T8', revenue: 9800000, date: '2023-08-15' },
+  { name: 'T9', revenue: 11200000, date: '2023-09-15' },
+  { name: 'T10', revenue: 13500000, date: '2023-10-15' },
+  { name: 'T11', revenue: 12800000, date: '2023-11-15' },
+  { name: 'T12', revenue: 15000000, date: '2023-12-15' },
 ];
 
 const serviceData = [
-  { name: 'Chăm sóc da', value: 35 },
-  { name: 'Trị liệu', value: 25 },
-  { name: 'Massage', value: 20 },
-  { name: 'Tẩy trang', value: 15 },
-  { name: 'Khác', value: 5 },
+  { name: 'Chăm sóc da', value: 35, date: '2023-06-15' },
+  { name: 'Trị liệu', value: 25, date: '2023-06-15' },
+  { name: 'Massage', value: 20, date: '2023-06-15' },
+  { name: 'Tẩy trang', value: 15, date: '2023-06-15' },
+  { name: 'Khác', value: 5, date: '2023-06-15' },
 ];
 
 const bookingData = [
@@ -128,6 +128,44 @@ const AdminReports = () => {
     to: endOfMonth(new Date()),
   });
 
+  const [filteredRevenueData, setFilteredRevenueData] = useState(revenueData);
+  const [filteredServiceData, setFilteredServiceData] = useState(serviceData);
+  const [filteredBookingData, setFilteredBookingData] = useState(bookingData);
+
+  // Apply date filtering when dateRange changes
+  useEffect(() => {
+    if (dateRange.from && dateRange.to) {
+      // Filter revenue data
+      const filteredRevenue = revenueData.filter(item => {
+        const itemDate = parseISO(item.date);
+        return isWithinInterval(itemDate, {
+          start: dateRange.from,
+          end: dateRange.to
+        });
+      });
+      setFilteredRevenueData(filteredRevenue.length > 0 ? filteredRevenue : revenueData);
+
+      // Filter service data
+      const filteredService = serviceData.filter(item => {
+        const itemDate = parseISO(item.date);
+        return isWithinInterval(itemDate, {
+          start: dateRange.from,
+          end: dateRange.to
+        });
+      });
+      setFilteredServiceData(filteredService.length > 0 ? filteredService : serviceData);
+
+      // Filter booking data
+      const filteredBooking = bookingData.filter(item => 
+        isWithinInterval(item.date, {
+          start: dateRange.from,
+          end: dateRange.to
+        })
+      );
+      setFilteredBookingData(filteredBooking.length > 0 ? filteredBooking : bookingData);
+    }
+  }, [dateRange]);
+
   const handleExportExcel = (reportType: string) => {
     let dataToExport: any[] = [];
     let sheetName = '';
@@ -137,7 +175,7 @@ const AdminReports = () => {
       case 'revenue':
         sheetName = 'Doanh thu';
         fileName = `bao-cao-doanh-thu-${format(new Date(), 'dd-MM-yyyy')}`;
-        dataToExport = revenueData.map(item => ({
+        dataToExport = filteredRevenueData.map(item => ({
           'Tháng': item.name,
           'Doanh Thu (VNĐ)': item.revenue.toLocaleString('vi-VN')
         }));
@@ -145,7 +183,7 @@ const AdminReports = () => {
       case 'service':
         sheetName = 'Dịch vụ';
         fileName = `bao-cao-dich-vu-${format(new Date(), 'dd-MM-yyyy')}`;
-        dataToExport = serviceData.map(item => ({
+        dataToExport = filteredServiceData.map(item => ({
           'Dịch vụ': item.name,
           'Tỷ lệ (%)': item.value
         }));
@@ -153,7 +191,7 @@ const AdminReports = () => {
       case 'booking':
         sheetName = 'Đặt lịch';
         fileName = `bao-cao-dat-lich-${format(new Date(), 'dd-MM-yyyy')}`;
-        dataToExport = bookingData.map(item => ({
+        dataToExport = filteredBookingData.map(item => ({
           'Mã đặt lịch': item.id,
           'Khách hàng': item.customerName,
           'Dịch vụ': item.service,
@@ -188,21 +226,21 @@ const AdminReports = () => {
     switch (reportType) {
       case 'revenue':
         fileName = `bao-cao-doanh-thu-${format(new Date(), 'dd-MM-yyyy')}`;
-        dataToExport = revenueData.map(item => ({
+        dataToExport = filteredRevenueData.map(item => ({
           'Tháng': item.name,
           'Doanh Thu (VNĐ)': item.revenue.toLocaleString('vi-VN')
         }));
         break;
       case 'service':
         fileName = `bao-cao-dich-vu-${format(new Date(), 'dd-MM-yyyy')}`;
-        dataToExport = serviceData.map(item => ({
+        dataToExport = filteredServiceData.map(item => ({
           'Dịch vụ': item.name,
           'Tỷ lệ (%)': item.value
         }));
         break;
       case 'booking':
         fileName = `bao-cao-dat-lich-${format(new Date(), 'dd-MM-yyyy')}`;
-        dataToExport = bookingData.map(item => ({
+        dataToExport = filteredBookingData.map(item => ({
           'Mã đặt lịch': item.id,
           'Khách hàng': item.customerName,
           'Dịch vụ': item.service,
@@ -234,6 +272,10 @@ const AdminReports = () => {
     // In a real application, you would use a library like jsPDF
     // For now, just show a toast
     toast.success(`Tính năng xuất PDF đang được phát triển`);
+  };
+
+  const handleDateRangeApply = () => {
+    toast.success(`Đã áp dụng bộ lọc từ ngày ${format(dateRange.from, 'dd/MM/yyyy')} đến ngày ${dateRange.to ? format(dateRange.to, 'dd/MM/yyyy') : format(dateRange.from, 'dd/MM/yyyy')}`);
   };
 
   return (
@@ -269,6 +311,11 @@ const AdminReports = () => {
                 numberOfMonths={2}
                 className={cn("p-3 pointer-events-auto")}
               />
+              <div className="p-3 border-t border-border">
+                <Button size="sm" className="w-full" onClick={handleDateRangeApply}>
+                  Áp dụng
+                </Button>
+              </div>
             </PopoverContent>
           </Popover>
         </div>
@@ -306,7 +353,7 @@ const AdminReports = () => {
               <CardContent>
                 <div className="text-2xl font-bold">
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-                    .format(121500000)}
+                    .format(filteredRevenueData.reduce((sum, item) => sum + item.revenue, 0))}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   +20.1% so với năm trước
@@ -335,7 +382,7 @@ const AdminReports = () => {
                 <CalendarDays className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">+2,889</div>
+                <div className="text-2xl font-bold">+{filteredBookingData.length}</div>
                 <p className="text-xs text-muted-foreground">
                   +19% so với tháng trước
                 </p>
@@ -351,7 +398,10 @@ const AdminReports = () => {
               <CardContent>
                 <div className="text-2xl font-bold">
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-                    .format(10125000)}
+                    .format(filteredRevenueData.length > 0 
+                      ? filteredRevenueData.reduce((sum, item) => sum + item.revenue, 0) / filteredRevenueData.length 
+                      : 0
+                    )}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   +12% so với tháng trước
@@ -383,7 +433,7 @@ const AdminReports = () => {
               <div className="h-96">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={revenueData}
+                    data={filteredRevenueData}
                     margin={{
                       top: 20,
                       right: 30,
@@ -439,7 +489,7 @@ const AdminReports = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={serviceData}
+                      data={filteredServiceData}
                       cx="50%"
                       cy="50%"
                       labelLine={true}
@@ -448,7 +498,7 @@ const AdminReports = () => {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {serviceData.map((entry, index) => (
+                      {filteredServiceData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -494,23 +544,31 @@ const AdminReports = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {bookingData.map((booking) => (
-                    <TableRow key={booking.id}>
-                      <TableCell className="font-medium">{booking.id}</TableCell>
-                      <TableCell>{booking.customerName}</TableCell>
-                      <TableCell>{booking.service}</TableCell>
-                      <TableCell>{format(booking.date, "dd/MM/yyyy")}</TableCell>
-                      <TableCell>
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-                          .format(booking.amount)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={booking.status === 'completed' ? 'default' : 'destructive'}>
-                          {booking.status === 'completed' ? 'Hoàn thành' : 'Đã hủy'}
-                        </Badge>
+                  {filteredBookingData.length > 0 ? (
+                    filteredBookingData.map((booking) => (
+                      <TableRow key={booking.id}>
+                        <TableCell className="font-medium">{booking.id}</TableCell>
+                        <TableCell>{booking.customerName}</TableCell>
+                        <TableCell>{booking.service}</TableCell>
+                        <TableCell>{format(booking.date, "dd/MM/yyyy")}</TableCell>
+                        <TableCell>
+                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+                            .format(booking.amount)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={booking.status === 'completed' ? 'default' : 'destructive'}>
+                            {booking.status === 'completed' ? 'Hoàn thành' : 'Đã hủy'}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-6">
+                        Không tìm thấy giao dịch nào trong khoảng thời gian đã chọn
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
