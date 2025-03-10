@@ -16,6 +16,29 @@ export interface User {
 
 export type UserRole = 'CUSTOMER' | 'ADMIN' | 'STAFF';
 
+export interface UserProfile {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  dob?: string;
+  bio?: string;
+  profileImage?: string;
+  role: UserRole;
+}
+
+export interface UserProfileUpdate {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  dob?: string;
+  bio?: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -32,16 +55,6 @@ export interface RegisterRequest {
   email: string;
   password: string;
   phone?: string;
-}
-
-export interface UpdateProfileRequest {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  dob?: string;
-  bio?: string;
 }
 
 export interface ChangePasswordRequest {

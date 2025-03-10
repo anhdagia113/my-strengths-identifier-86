@@ -1,6 +1,6 @@
 
 import { User, UserProfile, UserProfileUpdate } from '../models/user.model';
-import { apiClient } from '../apiClient';
+import apiClient from '../apiClient';
 import { PaymentMethod, PaymentMethodRequest, Transaction } from '../models/payment.model';
 
 // User profile operations
