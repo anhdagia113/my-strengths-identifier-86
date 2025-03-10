@@ -18,7 +18,8 @@ import {
   Search, 
   Eye, 
   Check, 
-  X
+  X,
+  Plus
 } from "lucide-react";
 import {
   Dialog,
@@ -27,12 +28,37 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { cn } from "@/lib/utils";
 
-// Dummy data for bookings
+// Dummy data for bookings (keep existing bookingsData)
 const bookingsData = [
   {
     id: "1",
@@ -86,12 +112,62 @@ const bookingsData = [
   },
 ];
 
+// Dummy data for services and specialists
+const services = [
+  { id: "1", name: "Chăm sóc da cơ bản", price: 450000 },
+  { id: "2", name: "Trị mụn chuyên sâu", price: 650000 },
+  { id: "3", name: "Massage mặt", price: 350000 },
+  { id: "4", name: "Tẩy trang chuyên sâu", price: 250000 },
+  { id: "5", name: "Trẻ hóa da", price: 800000 },
+];
+
+const specialists = [
+  { id: "1", name: "Trần Thị B" },
+  { id: "2", name: "Phạm Văn D" },
+  { id: "3", name: "Ngô Thị F" },
+  { id: "4", name: "Lý Thị H" },
+  { id: "5", name: "Vũ Văn K" },
+];
+
+// Form schema for creating a new booking
+const createBookingSchema = z.object({
+  customerName: z.string().min(1, "Tên khách hàng là bắt buộc"),
+  customerPhone: z.string().min(10, "Số điện thoại phải có ít nhất 10 số"),
+  service: z.string().min(1, "Vui lòng chọn dịch vụ"),
+  specialist: z.string().min(1, "Vui lòng chọn chuyên viên"),
+  date: z.date({
+    required_error: "Vui lòng chọn ngày",
+  }),
+  time: z.string().min(1, "Vui lòng chọn giờ"),
+});
+
+type CreateBookingFormValues = z.infer<typeof createBookingSchema>;
+
+// Available time slots
+const TIME_SLOTS = [
+  "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+  "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"
+];
+
 const AdminBookings = () => {
   const [bookings, setBookings] = useState(bookingsData);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [selectedBooking, setSelectedBooking] = useState<(typeof bookingsData)[0] | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  // Create booking form
+  const createBookingForm = useForm<CreateBookingFormValues>({
+    resolver: zodResolver(createBookingSchema),
+    defaultValues: {
+      customerName: "",
+      customerPhone: "",
+      service: "",
+      specialist: "",
+      time: "",
+    },
+  });
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -145,6 +221,29 @@ const AdminBookings = () => {
     toast.success("Đã hủy lịch đặt");
   };
 
+  const onCreateBookingSubmit = (data: CreateBookingFormValues) => {
+    // Create new booking with the form data
+    const newBooking = {
+      id: (bookings.length + 1).toString(),
+      customerName: data.customerName,
+      customerPhone: data.customerPhone,
+      service: services.find(s => s.id === data.service)?.name || "",
+      specialist: specialists.find(s => s.id === data.specialist)?.name || "",
+      date: `${format(data.date, "yyyy-MM-dd")}T${data.time}:00`,
+      status: "pending",
+      price: services.find(s => s.id === data.service)?.price || 0,
+    };
+
+    // Add new booking to the list
+    setBookings([newBooking, ...bookings]);
+    
+    // Reset form and close dialog
+    createBookingForm.reset();
+    setIsCreateDialogOpen(false);
+    
+    toast.success("Đã tạo lịch đặt mới thành công");
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -164,10 +263,180 @@ const AdminBookings = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý lịch đặt</h1>
-        <Button>
-          <Calendar className="mr-2 h-4 w-4" />
-          Tạo lịch đặt mới
-        </Button>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Tạo lịch đặt mới
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Tạo lịch đặt mới</DialogTitle>
+              <DialogDescription>
+                Nhập thông tin để tạo lịch đặt mới cho khách hàng
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...createBookingForm}>
+              <form onSubmit={createBookingForm.handleSubmit(onCreateBookingSubmit)} className="space-y-4">
+                <FormField
+                  control={createBookingForm.control}
+                  name="customerName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên khách hàng</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập tên khách hàng" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={createBookingForm.control}
+                  name="customerPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Số điện thoại</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập số điện thoại" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={createBookingForm.control}
+                  name="service"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Dịch vụ</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn dịch vụ" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {services.map((service) => (
+                            <SelectItem key={service.id} value={service.id}>
+                              {service.name} - {new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                              }).format(service.price)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={createBookingForm.control}
+                  name="specialist"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chuyên viên</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn chuyên viên" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {specialists.map((specialist) => (
+                            <SelectItem key={specialist.id} value={specialist.id}>
+                              {specialist.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={createBookingForm.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Ngày</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "dd/MM/yyyy")
+                                ) : (
+                                  <span>Chọn ngày</span>
+                                )}
+                                <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date < new Date() || date < new Date("1900-01-01")
+                              }
+                              initialFocus
+                              className="pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createBookingForm.control}
+                    name="time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Giờ</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Chọn giờ" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {TIME_SLOTS.map((time) => (
+                              <SelectItem key={time} value={time}>
+                                {time}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <DialogFooter className="mt-6">
+                  <Button type="submit">Tạo lịch đặt</Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>
