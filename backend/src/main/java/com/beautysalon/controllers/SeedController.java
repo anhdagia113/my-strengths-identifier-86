@@ -122,18 +122,25 @@ public class SeedController {
                 payment5.setUser(user);
                 paymentRepository.save(payment5);
                 
+                // Return all the created data for reference
+                Map<String, Object> seededData = new HashMap<>();
+                seededData.put("paymentMethods", paymentMethodRepository.findByUser(user));
+                seededData.put("payments", paymentRepository.findByUser(user));
+                
                 result.put("status", "success");
                 result.put("message", "Database seeded successfully");
+                
+                return ResponseEntity.ok(seededData);
             } else {
                 result.put("status", "error");
                 result.put("message", "Admin user not found");
+                return ResponseEntity.badRequest().body(result);
             }
-            
-            return ResponseEntity.ok(result);
             
         } catch (Exception e) {
             result.put("status", "error");
             result.put("message", "Error seeding database: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(result);
         }
     }

@@ -1,7 +1,5 @@
 
 import apiClient from '../apiClient';
-import { PaymentMethod } from '../models/payment.model';
-import { Transaction } from './transaction.service';
 
 /**
  * Service for managing database operations
@@ -170,13 +168,40 @@ const DatabaseService = {
     return response.data;
   },
 
-  // Helper method to seed initial data
+  // Database management
   seedInitialData: async () => {
     try {
-      await apiClient.post('/api/seed');
-      return { success: true, message: 'Database seeded successfully' };
+      const response = await apiClient.post('/api/seed');
+      return { success: true, message: 'Database seeded successfully', data: response.data };
     } catch (error) {
       return { success: false, message: 'Failed to seed database', error };
+    }
+  },
+
+  clearAllData: async () => {
+    try {
+      const response = await apiClient.delete('/api/data');
+      return { success: true, message: 'All data cleared successfully', data: response.data };
+    } catch (error) {
+      return { success: false, message: 'Failed to clear data', error };
+    }
+  },
+
+  exportData: async () => {
+    try {
+      const response = await apiClient.get('/api/data/export');
+      return { success: true, data: response.data };
+    } catch (error) {
+      return { success: false, message: 'Failed to export data', error };
+    }
+  },
+
+  importData: async (data: any) => {
+    try {
+      const response = await apiClient.post('/api/data/import', data);
+      return { success: true, message: 'Data imported successfully', data: response.data };
+    } catch (error) {
+      return { success: false, message: 'Failed to import data', error };
     }
   }
 };
