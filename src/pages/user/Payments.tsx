@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -28,7 +27,7 @@ import {
   Plus,
   Trash2,
   CreditCard as CreditCardIcon,
-  Bank,
+  Building, // Using Building instead of Bank which doesn't exist
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -161,7 +160,7 @@ const UserPayments = () => {
     
     // Create masked card number
     const last4 = newPayment.cardNumber.slice(-4);
-    const cardType = newPayment.type === "credit_card" ? "Visa" : "Bank";
+    const cardType = newPayment.type === "credit_card" ? "Visa" : "Building"; // Changed from Bank to Building
     const maskedNumber = `${cardType} ****${last4}`;
     
     // Create new payment method
@@ -567,7 +566,7 @@ const UserPayments = () => {
                   onClick={() => setNewPayment({...newPayment, type: "bank"})}
                   className="flex-1"
                 >
-                  <Bank className="mr-2 h-4 w-4" />
+                  <Building className="mr-2 h-4 w-4" /> {/* Changed from Bank to Building */}
                   Tài khoản ngân hàng
                 </Button>
               </div>

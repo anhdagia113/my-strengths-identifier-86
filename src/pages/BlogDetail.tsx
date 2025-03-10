@@ -1,12 +1,11 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, User, ArrowLeft, Share2, Bookmark } from "lucide-react";
+import { Calendar, Clock, User, ArrowLeft, Share2, Bookmark, Home } from "lucide-react";
 
-// Import the blog post type and sample data from Blog.tsx
+// Blog post type definition
 interface BlogPost {
   id: string;
   title: string;
@@ -19,7 +18,7 @@ interface BlogPost {
   category: string;
 }
 
-// Sample blog data (same as in Blog.tsx)
+// Sample blog data
 const blogPosts: BlogPost[] = [
   {
     id: "1",
@@ -224,12 +223,21 @@ const BlogDetail = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Button variant="ghost" className="mb-6" asChild>
-        <Link to="/blog">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Quay lại trang Blog
-        </Link>
-      </Button>
+      <div className="flex justify-between items-center mb-6">
+        <Button variant="ghost" asChild>
+          <Link to="/blog">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Quay lại trang Blog
+          </Link>
+        </Button>
+        
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/">
+            <Home className="mr-2 h-4 w-4" />
+            Trang chủ
+          </Link>
+        </Button>
+      </div>
       
       <div className="max-w-4xl mx-auto">
         <div className="mb-4">

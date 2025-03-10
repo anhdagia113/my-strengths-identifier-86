@@ -6,6 +6,7 @@ import { Calendar } from "lucide-react";
 
 const blogs = [
   {
+    id: "1",
     title: "5 bước chăm sóc da cơ bản mỗi ngày",
     description: "Khám phá quy trình 5 bước đơn giản giúp làn da của bạn luôn khỏe mạnh và rạng rỡ mỗi ngày.",
     image: "https://images.unsplash.com/photo-1498843053639-170ff2122f35?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80",
@@ -13,6 +14,7 @@ const blogs = [
     author: "Thu Hà"
   },
   {
+    id: "2",
     title: "Cách chọn serum phù hợp với từng loại da",
     description: "Hướng dẫn chi tiết giúp bạn lựa chọn loại serum phù hợp nhất với làn da của mình.",
     image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80",
@@ -20,6 +22,7 @@ const blogs = [
     author: "Minh Tâm"
   },
   {
+    id: "3",
     title: "Điều trị mụn hiệu quả tại nhà",
     description: "Những phương pháp và sản phẩm hiệu quả giúp điều trị mụn tại nhà an toàn.",
     image: "https://images.unsplash.com/photo-1643841364380-e990c1abf72b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80",
@@ -63,7 +66,7 @@ const FeaturedBlogs = () => {
                   {blog.description}
                 </CardDescription>
                 <Button variant="outline" className="w-full" asChild>
-                  <Link to="/blog">Đọc tiếp</Link>
+                  <Link to={`/blog/${blog.id}`}>Đọc tiếp</Link>
                 </Button>
               </CardContent>
             </Card>
