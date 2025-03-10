@@ -3,6 +3,13 @@
 
 Hệ thống quản lý dịch vụ làm đẹp và spa hoàn chỉnh, bao gồm quản lý khách hàng, đặt lịch, dịch vụ, chuyên viên và thanh toán.
 
+## Cấu trúc dự án
+
+Dự án được tổ chức thành hai phần chính:
+
+- `be/`: Backend (Spring Boot)
+- `fe/`: Frontend (React)
+
 ## Yêu cầu hệ thống
 
 - Java 17
@@ -28,22 +35,20 @@ Hệ thống quản lý dịch vụ làm đẹp và spa hoàn chỉnh, bao gồm
 
 ### Bước 2: Cài đặt và chạy Backend (Spring Boot)
 
-1. Clone repository và di chuyển vào thư mục dự án:
+1. Di chuyển vào thư mục backend:
    ```bash
-   git clone https://github.com/your-username/beautysalon.git
-   cd beautysalon
+   cd be
    ```
 
-2. Cấu hình kết nối MySQL trong file `backend/src/main/resources/application.properties`:
+2. Cấu hình kết nối MySQL trong file `src/main/resources/application.properties`:
    ```properties
    spring.datasource.url=jdbc:mysql://localhost:3306/beautysalon?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
    spring.datasource.username=beautysalon_user
    spring.datasource.password=password
    ```
 
-3. Chạy ứng dụng Spring Boot từ thư mục `backend`:
+3. Chạy ứng dụng Spring Boot:
    ```bash
-   cd backend
    ./mvnw spring-boot:run
    ```
    Hoặc sử dụng Maven trực tiếp:
@@ -55,23 +60,27 @@ Hệ thống quản lý dịch vụ làm đẹp và spa hoàn chỉnh, bao gồm
 
 ### Bước 3: Cài đặt và chạy Frontend (React)
 
-1. Di chuyển về thư mục gốc của dự án và cài đặt các dependencies:
+1. Di chuyển vào thư mục frontend:
    ```bash
-   cd ..
+   cd fe
+   ```
+
+2. Cài đặt các dependencies:
+   ```bash
    npm install
    ```
 
-2. Tạo file `.env.local` với nội dung:
+3. Tạo file `.env.local` với nội dung:
    ```
    VITE_API_URL=http://localhost:8080
    ```
 
-3. Chạy ứng dụng frontend:
+4. Chạy ứng dụng frontend:
    ```bash
    npm run dev
    ```
 
-4. Ứng dụng sẽ khởi chạy tại `http://localhost:5173`
+5. Ứng dụng sẽ khởi chạy tại `http://localhost:5173`
 
 ### Bước 4: Khởi tạo dữ liệu ban đầu
 
@@ -80,7 +89,7 @@ Hệ thống quản lý dịch vụ làm đẹp và spa hoàn chỉnh, bao gồm
    - Password: admin
 
 2. Tạo dữ liệu mẫu cho hệ thống bằng cách:
-   - Truy cập vào trang Quản lý cơ sở dữ liệu
+   - Truy cập vào trang Quản lý cơ sở dữ liệu (trong mục Admin)
    - Chọn "Tạo dữ liệu mẫu" hoặc "Nhập dữ liệu" để tải lên dữ liệu từ file
 
 ## Nhập dữ liệu vào hệ thống
@@ -108,17 +117,6 @@ Có hai cách để nhập dữ liệu vào hệ thống:
   - Email: admin@beautysalon.com
   - Password: admin
 
-## Cấu trúc dự án
-
-- `/backend`: Mã nguồn của API server (Spring Boot)
-  - `/src/main/java/com/beautysalon`: Java source code
-  - `/src/main/resources`: Config files, SQL scripts
-- `/src`: Mã nguồn của giao diện người dùng (React)
-  - `/api`: Các service và models cho API
-  - `/components`: Components React
-  - `/pages`: Các trang của ứng dụng
-  - `/types`: Định nghĩa kiểu TypeScript
-
 ## Các tính năng chính
 
 - Quản lý người dùng và phân quyền
@@ -127,6 +125,15 @@ Có hai cách để nhập dữ liệu vào hệ thống:
 - Quản lý chuyên viên
 - Quản lý thanh toán và hóa đơn
 - Blog và nội dung
+
+## Quản lý cơ sở dữ liệu
+
+Ứng dụng hỗ trợ các chức năng quản lý cơ sở dữ liệu sau:
+
+1. **Tạo dữ liệu mẫu**: Tạo tự động các bản ghi mẫu cho các bảng trong cơ sở dữ liệu.
+2. **Xóa toàn bộ dữ liệu**: Xóa tất cả dữ liệu hiện có trong cơ sở dữ liệu.
+3. **Xuất dữ liệu**: Xuất toàn bộ dữ liệu ra định dạng JSON để sao lưu.
+4. **Nhập dữ liệu**: Nhập dữ liệu từ định dạng JSON vào cơ sở dữ liệu.
 
 ## Đóng góp và phát triển
 
@@ -143,4 +150,3 @@ Có hai cách để nhập dữ liệu vào hệ thống:
 - Đây là ứng dụng mẫu, không nên sử dụng trực tiếp trong môi trường sản xuất mà không có đánh giá bảo mật.
 - Hãy đổi mật khẩu admin và các thông tin nhạy cảm trước khi triển khai.
 - Cập nhật các dependencies thường xuyên để đảm bảo bảo mật.
-

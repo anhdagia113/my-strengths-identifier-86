@@ -1,0 +1,247 @@
+
+# Beauty Salon Management System - Cấu trúc dự án
+
+## Cấu trúc thư mục
+
+```
+beauty-salon/
+├── be/                             # Backend (Spring Boot)
+│   ├── src/                         
+│   │   ├── main/
+│   │   │   ├── java/
+│   │   │   │   └── com/beautysalon/
+│   │   │   │       ├── config/      # Cấu hình ứng dụng
+│   │   │   │       ├── controllers/ # API controllers
+│   │   │   │       ├── exceptions/  # Xử lý ngoại lệ
+│   │   │   │       ├── models/      # Các entity
+│   │   │   │       ├── repositories/# JPA repositories
+│   │   │   │       ├── services/    # Business logic
+│   │   │   └── resources/           # Cấu hình và tài nguyên
+│   └── pom.xml                      # Maven dependencies
+│
+├── fe/                             # Frontend (React)
+│   ├── public/                      # Static files
+│   ├── src/                        
+│   │   ├── api/                     # API services
+│   │   │   ├── models/              # Typescript models
+│   │   │   └── services/            # API service calls
+│   │   ├── components/              # React components
+│   │   │   ├── admin/               # Admin components
+│   │   │   ├── booking/             # Booking components
+│   │   │   ├── dashboard/           # Dashboard components
+│   │   │   ├── home/                # Homepage components
+│   │   │   ├── layout/              # Layout components
+│   │   │   ├── ui/                  # UI components
+│   │   │   └── user/                # User-specific components
+│   │   ├── hooks/                   # Custom React hooks
+│   │   ├── layouts/                 # Layout templates
+│   │   ├── lib/                     # Utility functions
+│   │   ├── pages/                   # Page components
+│   │   │   ├── admin/               # Admin pages
+│   │   │   └── user/                # User pages
+│   │   ├── types/                   # TypeScript type definitions
+│   │   └── main.tsx                 # Entry point
+│   ├── .env.local                   # Environment variables
+│   └── package.json                 # NPM dependencies
+│
+├── sample-data.json                # Mẫu dữ liệu cho seeding
+└── README.md                       # Documentation
+```
+
+## Kiến trúc API
+
+### API Endpoints
+
+1. **Xác thực**
+   - POST /api/auth/login
+   - POST /api/auth/register
+   - GET /api/auth/me
+
+2. **Quản lý người dùng**
+   - GET /api/users
+   - GET /api/users/{id}
+   - POST /api/users
+   - PUT /api/users/{id}
+   - DELETE /api/users/{id}
+
+3. **Quản lý dịch vụ**
+   - GET /api/services
+   - GET /api/services/{id}
+   - POST /api/services
+   - PUT /api/services/{id}
+   - DELETE /api/services/{id}
+
+4. **Quản lý danh mục dịch vụ**
+   - GET /api/categories
+   - GET /api/categories/{id}
+   - POST /api/categories
+   - PUT /api/categories/{id}
+   - DELETE /api/categories/{id}
+
+5. **Quản lý chuyên viên**
+   - GET /api/specialists
+   - GET /api/specialists/{id}
+   - POST /api/specialists
+   - PUT /api/specialists/{id}
+   - DELETE /api/specialists/{id}
+
+6. **Quản lý lịch làm việc**
+   - GET /api/schedules
+   - GET /api/schedules/{id}
+   - POST /api/schedules
+   - PUT /api/schedules/{id}
+   - DELETE /api/schedules/{id}
+
+7. **Quản lý đặt lịch**
+   - GET /api/bookings
+   - GET /api/bookings/{id}
+   - POST /api/bookings
+   - PUT /api/bookings/{id}
+   - DELETE /api/bookings/{id}
+
+8. **Quản lý thanh toán**
+   - GET /api/payments
+   - GET /api/payments/{id}
+   - POST /api/payments
+   - PUT /api/payments/{id}/status
+   - DELETE /api/payments/{id}
+
+9. **Quản lý phương thức thanh toán**
+   - GET /api/payment-methods
+   - POST /api/payment-methods
+   - PUT /api/payment-methods/{id}
+   - DELETE /api/payment-methods/{id}
+
+10. **Quản lý cơ sở dữ liệu**
+    - POST /api/seed
+    - DELETE /api/data
+    - GET /api/data/export
+    - POST /api/data/import
+
+## Công nghệ sử dụng
+
+### Backend
+- Java 17
+- Spring Boot 2.7+
+- Spring Data JPA
+- Spring Security
+- MySQL 8.0
+- JWT Authentication
+- Maven
+
+### Frontend
+- React 18+
+- TypeScript
+- Vite
+- React Router DOM
+- React Query
+- Axios
+- Tailwind CSS
+- Shadcn UI
+- Zod (form validation)
+- React Hook Form
+- Lucide Icons
+
+## Mô hình dữ liệu
+
+1. **User**
+   - id: UUID
+   - email: String
+   - password: String
+   - firstName: String
+   - lastName: String
+   - role: Enum (ADMIN, STAFF, USER)
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+2. **Service**
+   - id: UUID
+   - name: String
+   - description: String
+   - price: Decimal
+   - duration: Integer
+   - image: String
+   - isActive: Boolean
+   - categoryId: UUID
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+3. **Category**
+   - id: UUID
+   - name: String
+   - description: String
+   - icon: String
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+4. **Specialist**
+   - id: UUID
+   - name: String
+   - role: String
+   - experience: String
+   - bio: String
+   - image: String
+   - isActive: Boolean
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+5. **Schedule**
+   - id: UUID
+   - specialistId: UUID
+   - date: Date
+   - slots: Array<String>
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+6. **Booking**
+   - id: UUID
+   - userId: UUID
+   - specialistId: UUID
+   - serviceIds: Array<UUID>
+   - date: Date
+   - time: String
+   - status: Enum (PENDING, CONFIRMED, CANCELLED, COMPLETED)
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+7. **PaymentMethod**
+   - id: UUID
+   - userId: UUID
+   - type: Enum (CREDIT_CARD, BANK_TRANSFER, CASH)
+   - name: String
+   - maskedNumber: String
+   - expiryDate: String
+   - isDefault: Boolean
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+8. **Payment**
+   - id: UUID
+   - transactionId: String
+   - userId: UUID
+   - bookingId: UUID
+   - amount: Decimal
+   - status: Enum (PENDING, COMPLETED, FAILED, REFUNDED)
+   - paymentMethod: String
+   - description: String
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+9. **Blog**
+   - id: UUID
+   - title: String
+   - excerpt: String
+   - content: String
+   - image: String
+   - author: String
+   - date: Date
+   - categoryId: UUID
+   - createdAt: DateTime
+   - updatedAt: DateTime
+
+10. **BlogCategory**
+    - id: UUID
+    - name: String
+    - description: String
+    - createdAt: DateTime
+    - updatedAt: DateTime
