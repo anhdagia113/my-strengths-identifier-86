@@ -48,6 +48,18 @@ CREATE TABLE IF NOT EXISTS payments (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
+-- Create payment_methods table
+CREATE TABLE IF NOT EXISTS payment_methods (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(20) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    masked_number VARCHAR(30),
+    expiry_date VARCHAR(10),
+    is_default BOOLEAN DEFAULT FALSE,
+    user_id BIGINT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Insert default roles
 INSERT INTO roles (name, description) VALUES 
 ('ROLE_ADMIN', 'Administrator role with full access'),
@@ -61,3 +73,16 @@ INSERT INTO users (name, email, password, enabled) VALUES
 -- Assign admin role to admin user
 INSERT INTO user_roles (user_id, role_id) VALUES 
 (1, 1);
+
+-- Insert sample payment methods
+INSERT INTO payment_methods (type, name, masked_number, expiry_date, is_default, user_id) VALUES
+('CREDIT_CARD', 'Visa', '****1234', '05/25', TRUE, 1),
+('CREDIT_CARD', 'Mastercard', '****5678', '08/24', FALSE, 1);
+
+-- Insert sample payments
+INSERT INTO payments (transaction_id, amount, payment_date, status, payment_method, description, user_id) VALUES
+('TX12345', 450000, '2023-06-15 09:30:00', 'COMPLETED', 'Visa ****1234', 'Chăm sóc da cơ bản', 1),
+('TX12346', 650000, '2023-05-20 14:00:00', 'COMPLETED', 'Mastercard ****5678', 'Trị mụn chuyên sâu', 1),
+('TX12347', 850000, '2023-04-10 10:15:00', 'COMPLETED', 'Visa ****1234', 'Trẻ hóa da', 1),
+('TX12348', 350000, '2023-03-05 16:30:00', 'FAILED', 'Mastercard ****5678', 'Massage mặt', 1),
+('TX12349', 250000, '2023-02-18 11:00:00', 'REFUNDED', 'Visa ****1234', 'Tẩy trang chuyên sâu', 1);

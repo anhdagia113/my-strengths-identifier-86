@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -32,70 +32,24 @@ import { cn } from "@/lib/utils";
 import { useReactToPrint } from 'react-to-print';
 import * as XLSX from 'xlsx';
 import { toast } from "sonner";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 
 interface Transaction {
-  id: string;
-  date: string;
-  description: string;
+  id: number;
+  transactionId: string;
   amount: number;
-  status: "completed" | "pending" | "failed";
+  paymentDate: string;
+  status: "COMPLETED" | "PENDING" | "FAILED" | "REFUNDED";
+  paymentMethod: string;
+  description: string;
 }
 
-const initialTransactions: Transaction[] = [
-  {
-    id: "1",
-    date: "2024-01-01",
-    description: "Dịch vụ Chăm sóc da mặt",
-    amount: 500000,
-    status: "completed",
-  },
-  {
-    id: "2",
-    date: "2024-01-05",
-    description: "Gội đầu và massage",
-    amount: 200000,
-    status: "completed",
-  },
-  {
-    id: "3",
-    date: "2024-01-10",
-    description: "Uốn tóc",
-    amount: 800000,
-    status: "pending",
-  },
-  {
-    id: "4",
-    date: "2024-01-15",
-    description: "Nhuộm tóc",
-    amount: 700000,
-    status: "completed",
-  },
-  {
-    id: "5",
-    date: "2024-01-20",
-    description: "Cắt tóc",
-    amount: 150000,
-    status: "completed",
-  },
-  {
-    id: "6",
-    date: "2024-01-25",
-    description: "Làm móng",
-    amount: 300000,
-    status: "failed",
-  },
-];
-
 const AdminTransactions = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>(
-    initialTransactions
-  );
-  const [filteredTransactions, setFilteredTransactions] = useState<
-    Transaction[]
-  >(transactions);
+  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<
-    "all" | "completed" | "pending" | "failed"
+    "all" | "COMPLETED" | "PENDING" | "FAILED" | "REFUNDED"
   >("all");
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
@@ -107,77 +61,74 @@ const AdminTransactions = () => {
   
   const printRef = useRef<HTMLDivElement>(null);
 
+  // Fetch transactions from backend
+  const { data: transactions, isLoading, isError } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: async () => {
+      const response = await axios.get<Transaction[]>('/api/payments');
+      return response.data;
+    }
+  });
+
+  useEffect(() => {
+    if (transactions) {
+      setFilteredTransactions(transactions);
+    }
+  }, [transactions]);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-
-    if (query.trim() === "") {
-      setFilteredTransactions(transactions);
-    } else {
-      const filtered = transactions.filter((transaction) =>
-        transaction.description.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredTransactions(filtered);
-    }
+    applyFilters(query, statusFilter, dateRange);
   };
 
-  const handleStatusFilterChange = (value: "all" | "completed" | "pending" | "failed") => {
+  const handleStatusFilterChange = (value: "all" | "COMPLETED" | "PENDING" | "FAILED" | "REFUNDED") => {
     setStatusFilter(value);
-
-    let filtered = [...transactions];
-
-    if (value !== "all") {
-      filtered = filtered.filter((transaction) => transaction.status === value);
-    }
-
-    if (searchQuery.trim() !== "") {
-      filtered = filtered.filter((transaction) =>
-        transaction.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    if (dateRange.from) {
-      filtered = filtered.filter(transaction => {
-        const transactionDate = new Date(transaction.date);
-        const afterStartDate = dateRange.from ? transactionDate >= dateRange.from : true;
-        const beforeEndDate = dateRange.to ? transactionDate <= dateRange.to : true;
-        return afterStartDate && beforeEndDate;
-      });
-    }
-
-    setFilteredTransactions(filtered);
+    applyFilters(searchQuery, value, dateRange);
   };
 
   const handleDateRangeChange = (range: { from: Date | undefined; to: Date | undefined }) => {
     setDateRange(range);
+    applyFilters(searchQuery, statusFilter, range);
+  };
+
+  const applyFilters = (
+    query: string, 
+    status: "all" | "COMPLETED" | "PENDING" | "FAILED" | "REFUNDED",
+    dates: { from: Date | undefined; to: Date | undefined }
+  ) => {
+    if (!transactions) return;
     
-    if (range.from) {
-      let filtered = [...transactions];
+    let filtered = [...transactions];
+    
+    // Apply search filter
+    if (query.trim() !== "") {
+      filtered = filtered.filter((transaction) =>
+        transaction.description.toLowerCase().includes(query.toLowerCase()) ||
+        transaction.transactionId.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+    
+    // Apply status filter
+    if (status !== "all") {
+      filtered = filtered.filter((transaction) => transaction.status === status);
+    }
+    
+    // Apply date filter
+    if (dates.from) {
+      const fromDate = new Date(dates.from);
+      fromDate.setHours(0, 0, 0, 0);
+      
+      const toDate = dates.to ? new Date(dates.to) : new Date(dates.from);
+      toDate.setHours(23, 59, 59, 999);
       
       filtered = filtered.filter(transaction => {
-        const transactionDate = new Date(transaction.date);
-        
-        const afterStartDate = range.from ? transactionDate >= range.from : true;
-        
-        const beforeEndDate = range.to ? transactionDate <= range.to : true;
-        
-        return afterStartDate && beforeEndDate;
+        const transactionDate = new Date(transaction.paymentDate);
+        return transactionDate >= fromDate && transactionDate <= toDate;
       });
-      
-      if (statusFilter !== "all") {
-        filtered = filtered.filter((transaction) => transaction.status === statusFilter);
-      }
-  
-      if (searchQuery.trim() !== "") {
-        filtered = filtered.filter((transaction) =>
-          transaction.description.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-      
-      setFilteredTransactions(filtered);
-    } else {
-      setFilteredTransactions(transactions);
     }
+    
+    setFilteredTransactions(filtered);
   };
 
   const handlePrint = useReactToPrint({
@@ -186,27 +137,89 @@ const AdminTransactions = () => {
 
   const handleExportExcel = () => {
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(filteredTransactions);
+    
+    // Format data for export
+    const formattedData = filteredTransactions.map(tx => ({
+      'Mã giao dịch': tx.transactionId,
+      'Ngày': format(new Date(tx.paymentDate), "dd/MM/yyyy"),
+      'Mô tả': tx.description,
+      'Số tiền': tx.amount,
+      'Trạng thái': getStatusText(tx.status),
+      'Phương thức': tx.paymentMethod
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(formattedData);
     XLSX.utils.book_append_sheet(wb, ws, "Transactions");
     XLSX.writeFile(wb, "transactions.xlsx");
     toast.success("Đã xuất file Excel thành công!");
   };
 
   const handleExportCSV = () => {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += [
-      Object.keys(filteredTransactions[0]).join(","),
-      ...filteredTransactions.map((item) => Object.values(item).join(",")),
-    ].join("\r\n");
-
-    const encodedUri = encodeURI(csvContent);
+    // Format data for export
+    const formattedData = filteredTransactions.map(tx => ({
+      'Mã giao dịch': tx.transactionId,
+      'Ngày': format(new Date(tx.paymentDate), "dd/MM/yyyy"),
+      'Mô tả': tx.description,
+      'Số tiền': tx.amount,
+      'Trạng thái': getStatusText(tx.status),
+      'Phương thức': tx.paymentMethod
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(formattedData);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute("href", url);
     link.setAttribute("download", "transactions.csv");
+    link.style.visibility = 'hidden';
+    
     document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
+    
     toast.success("Đã xuất file CSV thành công!");
   };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "COMPLETED":
+        return "Đã hoàn thành";
+      case "PENDING":
+        return "Đang xử lý";
+      case "FAILED":
+        return "Thất bại";
+      case "REFUNDED":
+        return "Hoàn tiền";
+      default:
+        return status;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "COMPLETED":
+        return "text-green-500";
+      case "PENDING":
+        return "text-yellow-500";
+      case "FAILED":
+        return "text-red-500";
+      case "REFUNDED":
+        return "text-purple-500";
+      default:
+        return "";
+    }
+  };
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center min-h-[400px]">Đang tải dữ liệu...</div>;
+  }
+
+  if (isError) {
+    return <div className="flex justify-center items-center min-h-[400px]">Đã xảy ra lỗi khi tải dữ liệu</div>;
+  }
 
   return (
     <div className="space-y-6" ref={printRef}>
@@ -240,9 +253,10 @@ const AdminTransactions = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                <SelectItem value="completed">Đã hoàn thành</SelectItem>
-                <SelectItem value="pending">Đang xử lý</SelectItem>
-                <SelectItem value="failed">Thất bại</SelectItem>
+                <SelectItem value="COMPLETED">Đã hoàn thành</SelectItem>
+                <SelectItem value="PENDING">Đang xử lý</SelectItem>
+                <SelectItem value="FAILED">Thất bại</SelectItem>
+                <SelectItem value="REFUNDED">Hoàn tiền</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex flex-col w-full sm:w-auto">
@@ -295,29 +309,37 @@ const AdminTransactions = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Mã giao dịch</TableHead>
                   <TableHead>Ngày</TableHead>
                   <TableHead>Mô tả</TableHead>
                   <TableHead>Số tiền</TableHead>
                   <TableHead>Trạng thái</TableHead>
+                  <TableHead>Phương thức</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTransactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell>{format(new Date(transaction.date), "dd/MM/yyyy")}</TableCell>
-                    <TableCell>{transaction.description}</TableCell>
-                    <TableCell>{transaction.amount.toLocaleString()} VNĐ</TableCell>
-                    <TableCell>
-                      {transaction.status === "completed" ? (
-                        <span className="text-green-500">Đã hoàn thành</span>
-                      ) : transaction.status === "pending" ? (
-                        <span className="text-yellow-500">Đang xử lý</span>
-                      ) : (
-                        <span className="text-red-500">Thất bại</span>
-                      )}
+                {filteredTransactions.length > 0 ? (
+                  filteredTransactions.map((transaction) => (
+                    <TableRow key={transaction.id}>
+                      <TableCell>{transaction.transactionId}</TableCell>
+                      <TableCell>{format(new Date(transaction.paymentDate), "dd/MM/yyyy")}</TableCell>
+                      <TableCell>{transaction.description}</TableCell>
+                      <TableCell>{transaction.amount.toLocaleString()} VNĐ</TableCell>
+                      <TableCell>
+                        <span className={getStatusColor(transaction.status)}>
+                          {getStatusText(transaction.status)}
+                        </span>
+                      </TableCell>
+                      <TableCell>{transaction.paymentMethod}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-6">
+                      Không có dữ liệu giao dịch phù hợp với bộ lọc
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
