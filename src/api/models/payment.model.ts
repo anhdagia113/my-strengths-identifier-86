@@ -1,49 +1,24 @@
 
-export interface Payment {
-  id: number;
-  userId: number;
-  bookingId: number;
+export interface Transaction {
+  id: string;
+  date: string;
+  service: string;
   amount: number;
-  currency: string;
-  status: PaymentStatus;
-  method: PaymentMethod;
-  transactionId?: string;
-  receiptUrl?: string;
-  createdAt: string;
+  status: string;
+  paymentMethod: string;
 }
 
-export type PaymentStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
-export type PaymentMethod = 'CREDIT_CARD' | 'PAYPAL' | 'BANK_TRANSFER' | 'CASH';
-
-export interface PaymentMethod {
-  id: number;
-  userId: number;
-  type: 'CREDIT_CARD' | 'BANK_ACCOUNT';
-  lastFour?: string;
-  cardType?: string;
-  expiryMonth?: number;
-  expiryYear?: number;
-  bankName?: string;
-  accountNumber?: string;
-  isDefault: boolean;
-  createdAt: string;
-}
-
-export interface PaymentRequest {
-  bookingId: number;
-  amount: number;
-  method: PaymentMethod;
-}
-
-export interface PaymentMethodRequest {
-  type: 'CREDIT_CARD' | 'BANK_ACCOUNT';
-  cardNumber?: string;
-  cardHolderName?: string;
-  expiryMonth?: number;
-  expiryYear?: number;
-  cvv?: string;
-  bankName?: string;
-  accountNumber?: string;
-  routingNumber?: string;
+export interface PaymentMethodType {
+  id: string;
+  type: 'credit_card' | 'bank';
+  name: string;
+  expiry?: string;
   isDefault: boolean;
 }
+
+export const PAYMENT_STATUSES = {
+  COMPLETED: 'completed',
+  PENDING: 'pending',
+  FAILED: 'failed',
+  REFUNDED: 'refunded'
+} as const;

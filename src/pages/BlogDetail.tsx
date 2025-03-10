@@ -1,328 +1,265 @@
 
-import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, User, ArrowLeft, Share2, Bookmark, Home } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
-// Blog post type definition
-interface BlogPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  image: string;
-  author: string;
-  date: string;
-  readTime: number;
-  category: string;
-}
-
-// Sample blog data
-const blogPosts: BlogPost[] = [
+// Mock data for now, would be fetched from API in real implementation
+const blogDetails = [
   {
     id: "1",
-    title: "Bí quyết chăm sóc da mùa hanh khô",
-    excerpt: "Làn da khô, bong tróc là nỗi lo thường trực trong mùa hanh khô. Hãy cùng khám phá những bí quyết giữ ẩm hiệu quả nhất.",
+    title: "Bí quyết chăm sóc da mụn hiệu quả tại nhà",
+    author: "Trần Thị Hoa",
+    date: "2023-04-15",
+    category: "Chăm sóc da",
     content: `
-    <p>Mùa đông với không khí hanh khô luôn là thử thách lớn đối với làn da. Nhiệt độ thấp kết hợp với độ ẩm không khí giảm mạnh khiến da dễ bị khô, bong tróc và mất nước.</p>
-    
-    <h2>Nguyên nhân khiến da khô trong mùa đông</h2>
-    
-    <p>Có nhiều yếu tố khiến da bị khô trong mùa đông:</p>
-    <ul>
-      <li>Không khí lạnh có độ ẩm thấp</li>
-      <li>Sử dụng máy sưởi làm giảm độ ẩm trong không khí</li>
-      <li>Tắm nước nóng làm mất đi lớp dầu tự nhiên trên da</li>
-      <li>Thiếu nước uống</li>
-    </ul>
-    
-    <h2>Các bước chăm sóc da cơ bản trong mùa đông</h2>
-    
-    <h3>1. Làm sạch nhẹ nhàng</h3>
-    <p>Trong mùa đông, bạn nên chọn các sản phẩm làm sạch dịu nhẹ, không chứa sulfate và có độ pH cân bằng. Tránh sử dụng nước quá nóng khi rửa mặt vì sẽ làm mất đi lớp dầu tự nhiên của da.</p>
-    
-    <h3>2. Dưỡng ẩm chuyên sâu</h3>
-    <p>Sử dụng kem dưỡng ẩm dạng kem (cream) thay vì lotion. Các thành phần như ceramide, hyaluronic acid, glycerin và các loại dầu tự nhiên (như dầu jojoba, dầu argan) là lựa chọn tuyệt vời để khóa ẩm cho da.</p>
-    
-    <h3>3. Tẩy tế bào chết đúng cách</h3>
-    <p>Tẩy tế bào chết là bước quan trọng để loại bỏ lớp da chết, giúp các sản phẩm dưỡng da thẩm thấu tốt hơn. Tuy nhiên, trong mùa đông, bạn nên giảm tần suất tẩy da xuống 1-2 lần/tuần và chọn các sản phẩm dịu nhẹ.</p>
-    
-    <h3>4. Sử dụng serum dưỡng ẩm</h3>
-    <p>Serum với thành phần hyaluronic acid, vitamin B5, ceramide giúp tăng cường độ ẩm cho da. Sử dụng serum trước khi thoa kem dưỡng ẩm để đạt hiệu quả tối ưu.</p>
-    
-    <h3>5. Không quên kem chống nắng</h3>
-    <p>Tia UV vẫn có hại cho da ngay cả trong mùa đông. Sử dụng kem chống nắng hàng ngày để bảo vệ da khỏi tác hại của ánh nắng mặt trời.</p>
-    
-    <h2>Các mẹo bổ sung</h2>
-    
-    <p>Ngoài chăm sóc da từ bên ngoài, bạn nên:</p>
-    <ul>
-      <li>Uống đủ nước (2-3 lít mỗi ngày)</li>
-      <li>Sử dụng máy tạo độ ẩm trong phòng</li>
-      <li>Bổ sung omega-3 và vitamin E trong chế độ ăn</li>
-      <li>Tránh tắm quá lâu với nước nóng</li>
-      <li>Sử dụng mặt nạ dưỡng ẩm 1-2 lần/tuần</li>
-    </ul>
-    
-    <p>Với những bí quyết trên, hy vọng bạn sẽ có được làn da khỏe mạnh, mềm mại suốt mùa đông này!</p>
+      <p>Mụn là một vấn đề da liễu phổ biến mà hầu hết mọi người đều gặp phải ít nhất một lần trong đời. Đặc biệt là ở tuổi thanh thiếu niên, khi cơ thể trải qua những thay đổi nội tiết tố, mụn trở thành nỗi ám ảnh của nhiều người.</p>
+      
+      <h2>Nguyên nhân gây mụn</h2>
+      <p>Có nhiều yếu tố góp phần vào việc hình thành mụn:</p>
+      <ul>
+        <li>Tăng tiết bã nhờn: Khi các tuyến dầu sản xuất quá nhiều dầu, nó có thể kết hợp với tế bào da chết và tắc nghẽn lỗ chân lông.</li>
+        <li>Vi khuẩn: Vi khuẩn P. acnes sinh sống trên da và có thể gây viêm khi lỗ chân lông bị tắc.</li>
+        <li>Viêm: Khi cơ thể phản ứng với vi khuẩn, nó gây ra viêm, dẫn đến đỏ và sưng.</li>
+        <li>Hormone: Thay đổi hormone, đặc biệt là trong tuổi dậy thì, thai kỳ và chu kỳ kinh nguyệt, có thể kích thích sản xuất dầu.</li>
+        <li>Chế độ ăn uống: Một số nghiên cứu gợi ý rằng thực phẩm có chỉ số đường huyết cao và sữa có thể làm trầm trọng thêm tình trạng mụn.</li>
+      </ul>
+      
+      <h2>Bí quyết chăm sóc da mụn tại nhà</h2>
+      <p>Để kiểm soát và điều trị mụn hiệu quả, bạn có thể áp dụng những bí quyết sau:</p>
+      
+      <h3>1. Làm sạch da đúng cách</h3>
+      <p>Rửa mặt hai lần một ngày bằng sữa rửa mặt dịu nhẹ, không chứa cồn. Tránh chà xát mạnh vì có thể gây kích ứng và làm mụn trở nên tồi tệ hơn.</p>
+      
+      <h3>2. Không nặn mụn</h3>
+      <p>Nặn mụn có thể đẩy vi khuẩn sâu hơn vào da, gây viêm nhiễm và để lại sẹo. Hãy để mụn tự lành hoặc tìm đến phương pháp điều trị chuyên nghiệp.</p>
+      
+      <h3>3. Sử dụng sản phẩm không gây mụn</h3>
+      <p>Tìm kiếm các sản phẩm được dán nhãn "không gây mụn" (non-comedogenic) hoặc "không dầu" (oil-free) để tránh tắc nghẽn lỗ chân lông.</p>
+      
+      <h3>4. Áp dụng các thành phần điều trị mụn</h3>
+      <p>Benzoyl peroxide, axit salicylic và retinoid là những thành phần hiệu quả trong việc điều trị mụn. Tuy nhiên, chúng có thể gây khô da, vì vậy hãy bắt đầu với nồng độ thấp và tăng dần.</p>
+      
+      <h3>5. Giữ ẩm cho da</h3>
+      <p>Ngay cả da dầu cũng cần được giữ ẩm. Sử dụng kem dưỡng ẩm không dầu để ngăn da tiết quá nhiều dầu để bù đắp cho tình trạng khô.</p>
+      
+      <h3>6. Bảo vệ da khỏi ánh nắng mặt trời</h3>
+      <p>Ánh nắng mặt trời có thể làm đậm màu vết thâm do mụn và một số thuốc trị mụn có thể làm da nhạy cảm hơn với ánh nắng. Sử dụng kem chống nắng không gây mụn hàng ngày.</p>
+      
+      <h3>7. Chế độ ăn uống cân bằng</h3>
+      <p>Một số nghiên cứu cho thấy thực phẩm có chỉ số đường huyết thấp và ít sữa có thể giúp cải thiện tình trạng mụn. Bổ sung nhiều rau xanh, trái cây và các nguồn protein nạc.</p>
+      
+      <h3>8. Quản lý stress</h3>
+      <p>Stress có thể làm tăng sản xuất hormone gây mụn. Thực hành các kỹ thuật giảm stress như yoga, thiền định hoặc hít thở sâu.</p>
+      
+      <h2>Khi nào nên gặp bác sĩ da liễu?</h2>
+      <p>Nếu mụn của bạn nghiêm trọng, để lại sẹo hoặc không đáp ứng với các phương pháp điều trị tại nhà sau 4-6 tuần, hãy tham khảo ý kiến của bác sĩ da liễu. Họ có thể đề xuất các phương pháp điều trị mạnh hơn như thuốc kháng sinh, retinoid uống hoặc các thủ thuật khác.</p>
+      
+      <p>Nhớ rằng, kiên nhẫn là chìa khóa khi điều trị mụn. Hầu hết các phương pháp điều trị mất 4-8 tuần để thấy kết quả đáng kể. Duy trì thói quen chăm sóc da đều đặn và tránh thử quá nhiều sản phẩm khác nhau trong thời gian ngắn.</p>
     `,
-    image: "https://images.unsplash.com/photo-1576426863848-c21f53c60b19?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    author: "Bác sĩ Nguyễn Thị A",
-    date: "2023-11-15",
-    readTime: 5,
-    category: "Chăm sóc da"
+    image: "https://images.unsplash.com/photo-1590439471364-192aa70c0b53?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    tags: ["mụn", "chăm sóc da", "skincare"],
   },
   {
     id: "2",
-    title: "Top 5 liệu trình chống lão hóa hiệu quả nhất",
-    excerpt: "Khám phá những liệu trình chống lão hóa được các chuyên gia da liễu đánh giá cao và khuyên dùng.",
+    title: "5 kiểu tóc trẻ trung cho phụ nữ tuổi 40+",
+    author: "Nguyễn Văn Nam",
+    date: "2023-03-28",
+    category: "Tóc",
     content: `
-    <p>Lão hóa da là quá trình tự nhiên mà ai cũng phải trải qua. Tuy nhiên, với sự phát triển của khoa học công nghệ, chúng ta có thể làm chậm quá trình này và duy trì làn da tươi trẻ lâu hơn.</p>
-    
-    <h2>Các dấu hiệu lão hóa da phổ biến</h2>
-    <p>Trước khi tìm hiểu về các liệu trình chống lão hóa, hãy nhận biết các dấu hiệu lão hóa da:</p>
-    <ul>
-      <li>Nếp nhăn và đường chân chim</li>
-      <li>Da chảy xệ, mất độ đàn hồi</li>
-      <li>Sạm nám, đốm nâu</li>
-      <li>Da khô, thiếu độ ẩm</li>
-      <li>Lỗ chân lông to</li>
-      <li>Vết đỏ, mao mạch nổi</li>
-    </ul>
-    
-    <h2>Top 5 liệu trình chống lão hóa hiệu quả</h2>
-    
-    <h3>1. Liệu trình Retinol</h3>
-    <p>Retinol (dẫn xuất từ vitamin A) được coi là "vàng" trong việc chống lão hóa. Thành phần này giúp tăng sản sinh collagen, đẩy nhanh quá trình tái tạo tế bào da, làm mờ nếp nhăn và cải thiện kết cấu da.</p>
-    <p><strong>Hiệu quả:</strong> Giảm nếp nhăn, cải thiện độ đều màu da, làm mờ đốm nâu và thu nhỏ lỗ chân lông.</p>
-    <p><strong>Lưu ý:</strong> Bắt đầu với nồng độ thấp (0.25-0.3%) và tăng dần theo thời gian. Sử dụng vào buổi tối và luôn bôi kem chống nắng vào ban ngày.</p>
-    
-    <h3>2. Liệu trình Vitamin C</h3>
-    <p>Vitamin C là chất chống oxy hóa mạnh, giúp bảo vệ da khỏi tác hại của gốc tự do, kích thích sản sinh collagen và làm sáng da.</p>
-    <p><strong>Hiệu quả:</strong> Làm sáng da, giảm nám, tăng độ đàn hồi và bảo vệ da khỏi tác hại của tia UV.</p>
-    <p><strong>Lưu ý:</strong> Sử dụng vào buổi sáng trước khi bôi kem chống nắng. Bảo quản sản phẩm nơi tối, mát để vitamin C không bị oxy hóa.</p>
-    
-    <h3>3. Liệu trình Peptide</h3>
-    <p>Peptide là chuỗi axit amin ngắn giúp kích thích sản sinh collagen và elastin, hai protein quan trọng duy trì độ đàn hồi và săn chắc của da.</p>
-    <p><strong>Hiệu quả:</strong> Giảm nếp nhăn, tăng độ đàn hồi, cải thiện kết cấu da.</p>
-    <p><strong>Lưu ý:</strong> Có thể sử dụng cả sáng và tối, kết hợp tốt với hầu hết các thành phần dưỡng da khác.</p>
-    
-    <h3>4. Liệu trình AHA/BHA</h3>
-    <p>Alpha Hydroxy Acids (AHA) như glycolic acid và Beta Hydroxy Acids (BHA) như salicylic acid giúp tẩy tế bào chết, thúc đẩy tái tạo tế bào da và cải thiện kết cấu da.</p>
-    <p><strong>Hiệu quả:</strong> Làm mịn bề mặt da, giảm vết thâm, cải thiện kết cấu da và giảm nếp nhăn mịn.</p>
-    <p><strong>Lưu ý:</strong> Sử dụng vào buổi tối, bắt đầu với nồng độ thấp (5-7%) và tăng dần. Luôn bôi kem chống nắng vào ban ngày.</p>
-    
-    <h3>5. Liệu trình Hyaluronic Acid</h3>
-    <p>Hyaluronic Acid (HA) là thành phần giữ ẩm tự nhiên, có khả năng giữ nước gấp 1000 lần trọng lượng của nó, giúp da căng mọng, đầy đặn.</p>
-    <p><strong>Hiệu quả:</strong> Dưỡng ẩm sâu, làm đầy nếp nhăn, tăng độ đàn hồi cho da.</p>
-    <p><strong>Lưu ý:</strong> Có thể sử dụng cả sáng và tối, hiệu quả tốt nhất khi thoa lên da ẩm.</p>
-    
-    <h2>Lời khuyên cho liệu trình chống lão hóa hiệu quả</h2>
-    <ul>
-      <li>Kiên trì và nhất quán: Kết quả thường thấy rõ sau 8-12 tuần sử dụng.</li>
-      <li>Kết hợp nhiều phương pháp: Phối hợp các thành phần chống lão hóa để đạt hiệu quả tối ưu.</li>
-      <li>Chống nắng mỗi ngày: Tia UV là nguyên nhân hàng đầu gây lão hóa sớm.</li>
-      <li>Chế độ ăn uống lành mạnh: Bổ sung thực phẩm giàu chất chống oxy hóa.</li>
-      <li>Ngủ đủ giấc: Da tái tạo tốt nhất trong giấc ngủ.</li>
-    </ul>
-    
-    <p>Hãy nhớ rằng, mỗi người có loại da và vấn đề da khác nhau. Tham khảo ý kiến bác sĩ da liễu hoặc chuyên gia da liễu để có liệu trình phù hợp nhất với làn da của bạn.</p>
+      <p>Ở độ tuổi 40+, nhiều phụ nữ mong muốn một kiểu tóc vừa phù hợp với lứa tuổi vừa mang lại vẻ trẻ trung, hiện đại. Bài viết này sẽ giới thiệu 5 kiểu tóc giúp bạn trẻ hóa diện mạo mà không cần đến phẫu thuật thẩm mỹ.</p>
+      
+      <h2>1. Bob ngắn layer</h2>
+      <p>Kiểu tóc bob ngắn với các lớp layer tạo độ phồng và chuyển động cho mái tóc. Kiểu tóc này phù hợp với nhiều dáng khuôn mặt và rất dễ định hình. Nó giúp che giấu những dấu hiệu lão hóa như nếp nhăn ở cổ và làm cho khuôn mặt trông thon gọn hơn.</p>
+      
+      <h2>2. Pixie hiện đại</h2>
+      <p>Pixie là một kiểu tóc táo bạo nhưng cực kỳ trẻ trung. Nó giúp tôn lên các đường nét khuôn mặt và đặc biệt là đôi mắt. Kiểu tóc này cũng rất dễ chăm sóc, tiết kiệm thời gian vào buổi sáng và có thể được tạo kiểu nhanh chóng với một ít wax hoặc gel.</p>
+      
+      <h2>3. Lob (Long Bob) xoăn nhẹ</h2>
+      <p>Lob là sự kết hợp hoàn hảo giữa tóc ngắn và dài. Độ dài thường ngang vai hoặc dài hơn một chút. Thêm vào đó những lọn xoăn nhẹ sẽ tạo ra một kiểu tóc trẻ trung, nữ tính mà vẫn giữ được sự chuyên nghiệp cần thiết.</p>
+      
+      <h2>4. Tóc thẳng với mái thưa</h2>
+      <p>Mái thưa có khả năng "ăn gian" tuổi tác một cách đáng kinh ngạc. Kết hợp với tóc thẳng dài hoặc ngang vai, kiểu tóc này tạo ra vẻ ngoài trẻ trung, năng động mà không kém phần tinh tế.</p>
+      
+      <h2>5. Tóc uốn xoăn lớn</h2>
+      <p>Những lọn xoăn lớn, bồng bềnh mang lại vẻ sang trọng, quyến rũ cho phụ nữ tuổi 40+. Kiểu tóc này đặc biệt phù hợp với những dịp đặc biệt và có thể được biến tấu với nhiều độ dài khác nhau.</p>
+      
+      <h2>Lời khuyên khi chọn kiểu tóc</h2>
+      <p>Khi lựa chọn kiểu tóc ở độ tuổi 40+, bạn nên cân nhắc những yếu tố sau:</p>
+      <ul>
+        <li>Khuôn mặt: Mỗi dáng khuôn mặt sẽ phù hợp với các kiểu tóc khác nhau. Tham khảo ý kiến của stylist để chọn kiểu tóc tôn lên ưu điểm của bạn.</li>
+        <li>Cấu trúc tóc: Tóc mỏng, tóc dày, tóc thẳng hay tóc xoăn sẽ ảnh hưởng đến việc tạo kiểu. Chọn kiểu tóc phù hợp với cấu trúc tóc tự nhiên sẽ giúp bạn dễ dàng chăm sóc và tạo kiểu hàng ngày.</li>
+        <li>Lối sống: Nếu bạn có lịch trình bận rộn, một kiểu tóc dễ chăm sóc như pixie hoặc bob sẽ phù hợp hơn.</li>
+        <li>Màu tóc: Màu tóc phù hợp cũng góp phần làm trẻ hóa diện mạo. Các tông màu ấm như nâu caramel, vàng mật ong thường mang lại vẻ tự nhiên và trẻ trung hơn.</li>
+      </ul>
+      
+      <p>Cuối cùng, sự tự tin là yếu tố quan trọng nhất. Bất kể bạn chọn kiểu tóc nào, hãy yêu quý và tự tin với nó. Thái độ tích cực sẽ giúp bạn tỏa sáng ở bất kỳ độ tuổi nào.</p>
     `,
-    image: "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    author: "Chuyên gia Trần Văn B",
-    date: "2023-10-20",
-    readTime: 7,
-    category: "Trẻ hóa da"
+    image: "https://images.unsplash.com/photo-1595237603223-597b9673e752?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    tags: ["tóc", "thời trang", "làm đẹp"],
   },
   {
     id: "3",
-    title: "Cách trị mụn hiệu quả tại nhà",
-    excerpt: "Những phương pháp đơn giản giúp bạn loại bỏ mụn một cách hiệu quả mà không cần đến spa.",
-    content: "Mụn là vấn đề phổ biến ảnh hưởng đến mọi lứa tuổi và loại da. Mặc dù có nhiều phương pháp điều trị tại các cơ sở thẩm mỹ, nhưng bạn cũng có thể áp dụng một số cách trị mụn hiệu quả tại nhà...",
-    image: "https://images.unsplash.com/photo-1573461169001-478ce74c359e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    author: "Dược sĩ Phạm Thị C",
-    date: "2023-09-05",
-    readTime: 6,
-    category: "Trị mụn"
+    title: "Những bước cơ bản để có một làn da khỏe mạnh",
+    author: "Lê Thị Hương",
+    date: "2023-05-02",
+    category: "Chăm sóc da",
+    content: `
+      <p>Làn da khỏe mạnh không chỉ giúp bạn trông đẹp hơn mà còn là dấu hiệu của sức khỏe tốt. Bài viết này sẽ hướng dẫn bạn những bước cơ bản nhất để chăm sóc da hàng ngày, phù hợp với mọi loại da.</p>
+      
+      <h2>1. Làm sạch da đúng cách</h2>
+      <p>Làm sạch da là bước đầu tiên và quan trọng nhất trong quy trình chăm sóc da. Hãy chọn sữa rửa mặt phù hợp với loại da của bạn:</p>
+      <ul>
+        <li>Da dầu/hỗn hợp: Sử dụng gel rửa mặt không chứa dầu có khả năng kiểm soát dầu.</li>
+        <li>Da khô/nhạy cảm: Chọn sữa rửa mặt dịu nhẹ, có thành phần dưỡng ẩm.</li>
+        <li>Da thường: Hầu hết các loại sữa rửa mặt đều phù hợp, nhưng nên tránh các sản phẩm chứa nhiều hóa chất mạnh.</li>
+      </ul>
+      <p>Rửa mặt hai lần mỗi ngày, sáng và tối. Không rửa mặt quá nhiều lần sẽ làm mất đi lớp dầu tự nhiên bảo vệ da.</p>
+      
+      <h2>2. Toner - Cân bằng độ pH</h2>
+      <p>Sau khi làm sạch, toner giúp cân bằng độ pH của da và chuẩn bị da tốt hơn cho các bước dưỡng tiếp theo. Toner hiện đại không còn chứa cồn gây khô da mà thường có các thành phần dưỡng ẩm, làm dịu và chống oxy hóa.</p>
+      
+      <h2>3. Serum - Điều trị các vấn đề da</h2>
+      <p>Serum chứa nồng độ cao các thành phần hoạt tính giúp điều trị các vấn đề da cụ thể:</p>
+      <ul>
+        <li>Vitamin C: Làm sáng da, chống oxy hóa</li>
+        <li>Retinol: Chống lão hóa, kích thích tái tạo tế bào</li>
+        <li>Axit hyaluronic: Cấp ẩm sâu</li>
+        <li>Niacinamide: Kiểm soát dầu, làm đều màu da</li>
+        <li>Axit salicylic: Trị mụn, thông thoáng lỗ chân lông</li>
+      </ul>
+      <p>Chọn serum phù hợp với nhu cầu da của bạn và thoa sau bước toner.</p>
+      
+      <h2>4. Dưỡng ẩm - Bảo vệ hàng rào da</h2>
+      <p>Dưỡng ẩm là bước không thể thiếu, ngay cả với da dầu. Kem dưỡng ẩm giúp khóa ẩm, bảo vệ hàng rào da và ngăn ngừa mất nước qua da.</p>
+      <ul>
+        <li>Da dầu: Gel dưỡng ẩm hoặc lotion không dầu</li>
+        <li>Da thường: Lotion hoặc kem dưỡng ẩm nhẹ</li>
+        <li>Da khô: Kem dưỡng ẩm giàu dinh dưỡng</li>
+        <li>Da nhạy cảm: Các sản phẩm không hương liệu, ít thành phần</li>
+      </ul>
+      
+      <h2>5. Kem chống nắng - Bảo vệ tối ưu</h2>
+      <p>Áp dụng kem chống nắng có chỉ số SPF ít nhất 30 mỗi ngày, ngay cả khi trời nhiều mây. Tia UV là nguyên nhân chính dẫn đến lão hóa sớm, đốm nâu và tăng nguy cơ ung thư da.</p>
+      <p>Có hai loại kem chống nắng chính:</p>
+      <ul>
+        <li>Chống nắng vật lý: Chứa zinc oxide hoặc titanium dioxide, phản chiếu tia UV.</li>
+        <li>Chống nắng hóa học: Hấp thụ tia UV và chuyển đổi thành nhiệt năng.</li>
+      </ul>
+      
+      <h2>6. Tẩy tế bào chết - Đổi mới làn da</h2>
+      <p>Tẩy tế bào chết 1-3 lần/tuần tùy loại da giúp loại bỏ tế bào chết, kích thích tái tạo tế bào mới và làm thông thoáng lỗ chân lông.</p>
+      <ul>
+        <li>Tẩy tế bào chết hóa học: Sử dụng các axit như AHA, BHA nhẹ nhàng hòa tan tế bào chết.</li>
+        <li>Tẩy tế bào chết vật lý: Sử dụng các hạt mịn để loại bỏ tế bào chết. Nên dùng cho da không nhạy cảm.</li>
+      </ul>
+      
+      <h2>7. Mặt nạ - Tăng cường dưỡng chất</h2>
+      <p>Sử dụng mặt nạ 1-2 lần/tuần để cung cấp thêm dưỡng chất và giải quyết các vấn đề da cụ thể. Có nhiều loại mặt nạ như mặt nạ đất sét (kiểm soát dầu), mặt nạ sheet (cấp ẩm), mặt nạ ngủ (dưỡng ẩm qua đêm)...</p>
+      
+      <h2>Điều chỉnh theo mùa</h2>
+      <p>Quy trình chăm sóc da nên được điều chỉnh theo mùa:</p>
+      <ul>
+        <li>Mùa đông: Tăng cường dưỡng ẩm, sử dụng sản phẩm dịu nhẹ hơn.</li>
+        <li>Mùa hè: Sử dụng các sản phẩm nhẹ hơn, tăng cường chống nắng.</li>
+      </ul>
+      
+      <h2>Lối sống lành mạnh cho làn da đẹp</h2>
+      <p>Ngoài quy trình chăm sóc da, những yếu tố sau cũng ảnh hưởng đến sức khỏe làn da:</p>
+      <ul>
+        <li>Chế độ ăn giàu chất chống oxy hóa từ trái cây và rau quả.</li>
+        <li>Uống đủ nước mỗi ngày.</li>
+        <li>Hạn chế đồ uống có cồn và cafein.</li>
+        <li>Ngủ đủ 7-8 tiếng mỗi đêm.</li>
+        <li>Quản lý stress hiệu quả.</li>
+        <li>Tập thể dục đều đặn.</li>
+        <li>Không hút thuốc.</li>
+      </ul>
+      
+      <p>Hãy nhớ rằng, một làn da khỏe đẹp cần thời gian và sự kiên trì. Kết quả không đến ngay lập tức, nhưng nếu bạn duy trì quy trình chăm sóc da đúng đắn, bạn sẽ thấy sự cải thiện rõ rệt sau vài tuần đến vài tháng.</p>
+    `,
+    image: "https://images.unsplash.com/photo-1674758419572-d6f92a734a26?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    tags: ["chăm sóc da", "skincare", "làm đẹp"],
   },
-  {
-    id: "4",
-    title: "Các loại mặt nạ tự nhiên dưỡng da",
-    excerpt: "Tận dụng những nguyên liệu tự nhiên có sẵn trong nhà bếp để làm đẹp da một cách an toàn và hiệu quả.",
-    content: "Mặt nạ tự nhiên là lựa chọn an toàn và tiết kiệm để chăm sóc da. Với những nguyên liệu quen thuộc từ nhà bếp, bạn có thể tạo ra các loại mặt nạ phù hợp với từng loại da và giải quyết các vấn đề da khác nhau...",
-    image: "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    author: "Chuyên gia Lê Thị D",
-    date: "2023-08-12",
-    readTime: 4,
-    category: "Chăm sóc da"
-  },
-  {
-    id: "5",
-    title: "Tác hại của tia UV và cách bảo vệ da",
-    excerpt: "Tia UV là kẻ thù số một của làn da, gây ra nhiều vấn đề nghiêm trọng. Hãy tìm hiểu cách bảo vệ da hiệu quả.",
-    content: "Tia UV từ mặt trời không chỉ gây ra cháy nắng, sạm da mà còn là nguyên nhân chính dẫn đến lão hóa sớm và thậm chí là ung thư da. Việc bảo vệ da khỏi tác hại của tia UV là vô cùng quan trọng...",
-    image: "https://images.unsplash.com/photo-1638815752077-d1f7c1f7c4bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    author: "Bác sĩ Hoàng Văn E",
-    date: "2023-07-18",
-    readTime: 8,
-    category: "Bảo vệ da"
-  },
-  {
-    id: "6",
-    title: "Chế độ ăn uống tốt cho làn da",
-    excerpt: "Làn da khỏe đẹp bắt đầu từ bên trong. Khám phá những thực phẩm giúp nuôi dưỡng da từ gốc.",
-    content: "Chế độ ăn uống đóng vai trò quan trọng trong việc duy trì làn da khỏe mạnh. Những thực phẩm giàu chất chống oxy hóa, vitamin và khoáng chất không chỉ tốt cho sức khỏe tổng thể mà còn giúp da sáng mịn, chống lại các dấu hiệu lão hóa...",
-    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    author: "Chuyên gia dinh dưỡng Ngô Thị F",
-    date: "2023-06-25",
-    readTime: 5,
-    category: "Dinh dưỡng"
-  }
 ];
 
-// Sample related posts data
-const getRelatedPosts = (currentPostId: string, category: string) => {
-  return blogPosts
-    .filter(post => post.id !== currentPostId && post.category === category)
-    .slice(0, 3);
-};
-
 const BlogDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const [post, setPost] = useState<BlogPost | null>(null);
-  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+  const { id } = useParams();
+  const blog = blogDetails.find((blog) => blog.id === id);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    
-    if (id) {
-      const foundPost = blogPosts.find(post => post.id === id);
-      setPost(foundPost || null);
-      
-      if (foundPost) {
-        setRelatedPosts(getRelatedPosts(foundPost.id, foundPost.category));
-      }
-    }
-  }, [id]);
-
-  if (!post) {
+  if (!blog) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold mb-4">Bài viết không tồn tại</h1>
-        <p className="mb-8">Bài viết bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
-        <div className="flex justify-center gap-4">
-          <Button asChild>
-            <Link to="/blog">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Quay lại trang Blog
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link to="/">
-              <Home className="mr-2 h-4 w-4" />
-              Trang chủ
-            </Link>
-          </Button>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold">Bài viết không tồn tại</h2>
+          <Link to="/blog">
+            <Button className="mt-4">Quay lại trang blog</Button>
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <div className="space-x-2">
-          <Button variant="outline" asChild>
-            <Link to="/blog">
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8 mt-16">
+        <div className="mb-6">
+          <Link to="/blog">
+            <Button variant="outline" className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Quay lại Blog
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/">
-              <Home className="mr-2 h-4 w-4" />
-              Trang chủ
-            </Link>
-          </Button>
-        </div>
-      </div>
-      
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-4">
-          <Badge className="mb-4">{post.category}</Badge>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">{post.title}</h1>
-          
-          <div className="flex flex-wrap items-center text-sm text-muted-foreground mb-8">
-            <div className="flex items-center mr-4">
-              <Calendar className="h-4 w-4 mr-1" />
-              <span>{new Date(post.date).toLocaleDateString('vi-VN')}</span>
-            </div>
-            <div className="flex items-center mr-4">
-              <Clock className="h-4 w-4 mr-1" />
-              <span>{post.readTime} phút đọc</span>
-            </div>
-            <div className="flex items-center">
-              <User className="h-4 w-4 mr-1" />
-              <span>{post.author}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mb-8">
-          <img 
-            src={post.image} 
-            alt={post.title} 
-            className="w-full h-[300px] md:h-[400px] object-cover rounded-lg"
-          />
-        </div>
-        
-        <div className="flex justify-between mb-8">
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm">
-              <Share2 className="h-4 w-4 mr-2" />
-              Chia sẻ
+              Quay lại danh sách bài viết
             </Button>
-            <Button variant="outline" size="sm">
-              <Bookmark className="h-4 w-4 mr-2" />
-              Lưu
-            </Button>
-          </div>
+          </Link>
         </div>
         
-        <div className="prose max-w-none mb-12" dangerouslySetInnerHTML={{ __html: post.content }} />
-        
-        {relatedPosts.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6">Bài viết liên quan</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {relatedPosts.map(relatedPost => (
-                <Card key={relatedPost.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                  <img 
-                    src={relatedPost.image} 
-                    alt={relatedPost.title} 
-                    className="w-full h-40 object-cover"
-                  />
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <Badge variant="outline">{relatedPost.category}</Badge>
-                      <div className="flex items-center text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3 mr-1" />
-                        <span>{relatedPost.readTime} phút đọc</span>
-                      </div>
-                    </div>
-                    <h3 className="font-semibold mb-2 line-clamp-2">{relatedPost.title}</h3>
-                    <Button asChild variant="link" className="px-0">
-                      <Link to={`/blog/${relatedPost.id}`}>Đọc tiếp</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="aspect-w-16 aspect-h-9 w-full">
+            <img
+              src={blog.image}
+              alt={blog.title}
+              className="object-cover w-full h-64 sm:h-96"
+            />
+          </div>
+          <div className="p-6 sm:p-8">
+            <div className="mb-4">
+              <span className="inline-block bg-primary/10 text-primary px-3 py-1 text-sm font-medium rounded-full">
+                {blog.category}
+              </span>
+              <div className="mt-2 text-sm text-muted-foreground">
+                {new Date(blog.date).toLocaleDateString("vi-VN", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+                {" · "}
+                {blog.author}
+              </div>
+            </div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-foreground">
+              {blog.title}
+            </h1>
+            <div
+              className="prose prose-sm sm:prose lg:prose-lg mx-auto text-foreground"
+              dangerouslySetInnerHTML={{ __html: blog.content }}
+            />
+            <div className="mt-8 pt-6 border-t border-border">
+              <div className="flex flex-wrap gap-2">
+                {blog.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="bg-secondary text-secondary-foreground px-3 py-1 text-sm rounded-full"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 };

@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -26,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { useReactToPrint } from 'react-to-print';
 import * as XLSX from 'xlsx';
@@ -103,6 +104,8 @@ const AdminTransactions = () => {
     from: undefined,
     to: undefined,
   });
+  
+  const printRef = useRef<HTMLDivElement>(null);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -177,6 +180,10 @@ const AdminTransactions = () => {
     }
   };
 
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+  });
+
   const handleExportExcel = () => {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(filteredTransactions);
@@ -202,7 +209,7 @@ const AdminTransactions = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={printRef}>
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Giao dịch</h1>
         <p className="text-muted-foreground">
@@ -245,7 +252,7 @@ const AdminTransactions = () => {
                     variant="outline"
                     className="w-full justify-start text-left font-normal"
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <Calendar className="mr-2 h-4 w-4" />
                     {dateRange.from ? (
                       dateRange.to ? (
                         <>
@@ -261,7 +268,7 @@ const AdminTransactions = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
+                  <CalendarComponent
                     initialFocus
                     mode="range"
                     defaultMonth={new Date()}
@@ -279,6 +286,9 @@ const AdminTransactions = () => {
             <Button onClick={handleExportCSV}>
               <FileText className="mr-2 h-4 w-4" />
               Xuất CSV
+            </Button>
+            <Button onClick={handlePrint}>
+              In báo cáo
             </Button>
           </div>
           <div className="rounded-md border">
