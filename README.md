@@ -12,7 +12,7 @@ Dự án được tổ chức thành hai phần chính:
 
 ## Yêu cầu hệ thống
 
-- Java 11 hoặc cao hơn (Project đã được cấu hình để tương thích với Java 11)
+- Java 17
 - Node.js 18+ và npm/yarn
 - MySQL 8.0
 
@@ -150,13 +150,3 @@ Có hai cách để nhập dữ liệu vào hệ thống:
 - Đây là ứng dụng mẫu, không nên sử dụng trực tiếp trong môi trường sản xuất mà không có đánh giá bảo mật.
 - Hãy đổi mật khẩu admin và các thông tin nhạy cảm trước khi triển khai.
 - Cập nhật các dependencies thường xuyên để đảm bảo bảo mật.
-
-## Lưu ý về phiên bản Java
-
-Nếu bạn gặp lỗi khi biên dịch liên quan đến phiên bản Java, hãy đảm bảo:
-
-1. Cài đặt Java 11 hoặc cao hơn
-2. Đảm bảo biến môi trường JAVA_HOME trỏ đến đúng thư mục cài đặt Java
-3. Kiểm tra phiên bản Java đang sử dụng bằng lệnh: `java -version`
-
-Nếu bạn muốn sử dụng phiên bản Java khác, hãy điều chỉnh giá trị `<java.version>` trong file `pom.xml` cho phù hợp.
