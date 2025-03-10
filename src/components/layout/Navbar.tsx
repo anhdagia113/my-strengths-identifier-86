@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "./Logo";
-import { Menu, X, User, LogOut, Shield } from "lucide-react";
+import { Menu, X, User, LogOut, Shield, BookOpen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,6 +77,9 @@ const Navbar = () => {
             <Link to="/booking" className="hover:text-primary transition-colors font-medium">
               Đặt lịch
             </Link>
+            <Link to="/blog" className="hover:text-primary transition-colors font-medium">
+              Blog
+            </Link>
             <Link to="/quiz" className="hover:text-primary transition-colors font-medium">
               Trắc nghiệm da
             </Link>
@@ -140,6 +143,9 @@ const Navbar = () => {
               </Link>
               <Link to="/booking" className="hover:text-primary transition-colors px-2 py-1.5 rounded font-medium">
                 Đặt lịch
+              </Link>
+              <Link to="/blog" className="hover:text-primary transition-colors px-2 py-1.5 rounded font-medium">
+                Blog
               </Link>
               <Link to="/quiz" className="hover:text-primary transition-colors px-2 py-1.5 rounded font-medium">
                 Trắc nghiệm da

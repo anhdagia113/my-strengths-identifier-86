@@ -12,6 +12,13 @@ import {
   AvatarFallback, 
   AvatarImage 
 } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { 
   UserCircle, 
@@ -22,8 +29,31 @@ import {
   Phone, 
   MapPin, 
   Upload,
-  Lock
+  Lock,
+  CreditCard,
+  Trash2,
+  Plus
 } from "lucide-react";
+
+// Sample payment methods
+const initialPaymentMethods = [
+  {
+    id: "1",
+    type: "credit",
+    number: "**** **** **** 4589",
+    name: "Nguyễn Văn A",
+    expires: "12/25",
+    isDefault: true,
+  },
+  {
+    id: "2",
+    type: "bank",
+    number: "Techcombank - **** 9845",
+    name: "Nguyễn Văn A",
+    expires: "",
+    isDefault: false,
+  }
+];
 
 const UserSettings = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -41,6 +71,16 @@ const UserSettings = () => {
     promotional: false,
     reminder: true,
     newsletter: false,
+  });
+
+  const [paymentMethods, setPaymentMethods] = useState(initialPaymentMethods);
+  const [newPaymentDialogOpen, setNewPaymentDialogOpen] = useState(false);
+  const [newPayment, setNewPayment] = useState({
+    type: "credit",
+    number: "",
+    name: "",
+    expires: "",
+    cvv: "",
   });
 
   const handleProfileChange = (key: keyof typeof profileData, value: string) => {
@@ -74,6 +114,74 @@ const UserSettings = () => {
     toast.success("Ảnh đại diện đã được cập nhật");
   };
 
+  const handlePaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewPayment(prev => ({ ...prev, [name]: value }));
+  };
+
+  const addPaymentMethod = () => {
+    // Basic validation
+    if (!newPayment.number || !newPayment.name) {
+      toast.error("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
+
+    // Format card number for display
+    let displayNumber = newPayment.number;
+    if (newPayment.type === "credit") {
+      const last4 = newPayment.number.slice(-4);
+      displayNumber = `**** **** **** ${last4}`;
+    } else {
+      displayNumber = `Techcombank - **** ${newPayment.number.slice(-4)}`;
+    }
+
+    const newMethod = {
+      id: (paymentMethods.length + 1).toString(),
+      type: newPayment.type,
+      number: displayNumber,
+      name: newPayment.name,
+      expires: newPayment.expires,
+      isDefault: paymentMethods.length === 0, // First card is default
+    };
+
+    setPaymentMethods([...paymentMethods, newMethod]);
+    setNewPaymentDialogOpen(false);
+    setNewPayment({
+      type: "credit",
+      number: "",
+      name: "",
+      expires: "",
+      cvv: "",
+    });
+    toast.success("Phương thức thanh toán đã được thêm");
+  };
+
+  const removePaymentMethod = (id: string) => {
+    // Check if it's the default card
+    const isDefault = paymentMethods.find(method => method.id === id)?.isDefault;
+    
+    // Filter out the card
+    const updatedMethods = paymentMethods.filter(method => method.id !== id);
+    
+    // If we removed the default card, set a new default
+    if (isDefault && updatedMethods.length > 0) {
+      updatedMethods[0].isDefault = true;
+    }
+    
+    setPaymentMethods(updatedMethods);
+    toast.success("Phương thức thanh toán đã được xóa");
+  };
+
+  const setDefaultPaymentMethod = (id: string) => {
+    const updatedMethods = paymentMethods.map(method => ({
+      ...method,
+      isDefault: method.id === id,
+    }));
+    
+    setPaymentMethods(updatedMethods);
+    toast.success("Phương thức thanh toán mặc định đã được cập nhật");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -83,6 +191,7 @@ const UserSettings = () => {
       <Tabs defaultValue="profile" onValueChange={setActiveTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="profile">Hồ sơ</TabsTrigger>
+          <TabsTrigger value="payment">Thanh toán</TabsTrigger>
           <TabsTrigger value="notifications">Thông báo</TabsTrigger>
           <TabsTrigger value="security">Bảo mật</TabsTrigger>
           <TabsTrigger value="appearance">Giao diện</TabsTrigger>
@@ -177,6 +286,83 @@ const UserSettings = () => {
               <Button onClick={handleSaveProfile}>
                 Lưu thay đổi
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="payment">
+          <Card>
+            <CardHeader>
+              <CardTitle>Phương thức thanh toán</CardTitle>
+              <CardDescription>
+                Quản lý các phương thức thanh toán của bạn
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Phương thức đã lưu</h3>
+                <Button 
+                  onClick={() => setNewPaymentDialogOpen(true)}
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Thêm mới
+                </Button>
+              </div>
+
+              {paymentMethods.length > 0 ? (
+                <div className="space-y-4">
+                  {paymentMethods.map((method) => (
+                    <div key={method.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <CreditCard className="h-8 w-8 text-primary" />
+                        <div>
+                          <p className="font-medium">{method.number}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {method.name} {method.expires && `• Hết hạn: ${method.expires}`}
+                          </p>
+                          {method.isDefault && (
+                            <Badge className="mt-1">Mặc định</Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        {!method.isDefault && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setDefaultPaymentMethod(method.id)}
+                          >
+                            Đặt mặc định
+                          </Button>
+                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-red-500"
+                          onClick={() => removePaymentMethod(method.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-10 border rounded-lg">
+                  <CreditCard className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-muted-foreground">Bạn chưa có phương thức thanh toán nào</p>
+                  <Button 
+                    onClick={() => setNewPaymentDialogOpen(true)}
+                    variant="outline" 
+                    className="mt-4"
+                  >
+                    Thêm phương thức thanh toán
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -414,6 +600,92 @@ const UserSettings = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* New Payment Method Dialog */}
+      <Dialog open={newPaymentDialogOpen} onOpenChange={setNewPaymentDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Thêm phương thức thanh toán</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Loại phương thức</Label>
+              <div className="flex space-x-2">
+                <Button 
+                  type="button"
+                  variant={newPayment.type === "credit" ? "default" : "outline"}
+                  onClick={() => setNewPayment({...newPayment, type: "credit"})}
+                  className="flex-1"
+                >
+                  Thẻ tín dụng
+                </Button>
+                <Button 
+                  type="button"
+                  variant={newPayment.type === "bank" ? "default" : "outline"}
+                  onClick={() => setNewPayment({...newPayment, type: "bank"})}
+                  className="flex-1"
+                >
+                  Tài khoản ngân hàng
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="card-number">
+                {newPayment.type === "credit" ? "Số thẻ" : "Số tài khoản"}
+              </Label>
+              <Input 
+                id="card-number"
+                name="number"
+                value={newPayment.number}
+                onChange={handlePaymentInputChange}
+                placeholder={newPayment.type === "credit" ? "1234 5678 9012 3456" : "0123456789"}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="card-name">Tên chủ thẻ</Label>
+              <Input 
+                id="card-name"
+                name="name"
+                value={newPayment.name}
+                onChange={handlePaymentInputChange}
+                placeholder="NGUYEN VAN A"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {newPayment.type === "credit" && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="expires">Ngày hết hạn</Label>
+                    <Input 
+                      id="expires"
+                      name="expires"
+                      value={newPayment.expires}
+                      onChange={handlePaymentInputChange}
+                      placeholder="MM/YY"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cvv">CVV</Label>
+                    <Input 
+                      id="cvv"
+                      name="cvv"
+                      value={newPayment.cvv}
+                      onChange={handlePaymentInputChange}
+                      placeholder="123"
+                      type="password"
+                      maxLength={3}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewPaymentDialogOpen(false)}>Hủy</Button>
+            <Button onClick={addPaymentMethod}>Lưu</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
