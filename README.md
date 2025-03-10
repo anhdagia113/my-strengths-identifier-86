@@ -16,7 +16,39 @@ Dự án được tổ chức thành hai phần chính:
 - Node.js 18+ và npm/yarn
 - MySQL 8.0
 
-## Cài đặt và chạy trên môi trường local
+## Cách khởi chạy nhanh (Tự động)
+
+### Sử dụng script tự động
+
+Dự án cung cấp script tự động để khởi chạy cả backend và frontend cùng lúc:
+
+#### Trên Linux/macOS:
+
+1. Cấp quyền thực thi cho script:
+   ```bash
+   chmod +x start-app.sh
+   ```
+
+2. Chạy script:
+   ```bash
+   ./start-app.sh
+   ```
+
+#### Trên Windows:
+
+1. Chạy script bằng cách nhấp đúp chuột vào file `start-app.cmd` hoặc qua Command Prompt:
+   ```
+   start-app.cmd
+   ```
+
+Script sẽ tự động:
+- Kiểm tra các yêu cầu hệ thống
+- Khởi động backend Spring Boot
+- Khởi động frontend React
+- Hiển thị URL để truy cập ứng dụng
+- Quản lý logs và tự động dừng tất cả các dịch vụ khi thoát
+
+## Cài đặt và chạy thủ công
 
 ### Bước 1: Cài đặt cơ sở dữ liệu MySQL
 
@@ -88,13 +120,41 @@ Dự án được tổ chức thành hai phần chính:
 1. Truy cập ứng dụng frontend tại `http://localhost:5173`
 2. Đăng nhập vào hệ thống (thông tin đăng nhập sẽ được cấu hình trong dữ liệu khởi tạo)
 
+## Cấu hình IntelliJ IDEA chi tiết
+
+### Cài đặt JDK
+
+1. Mở IntelliJ IDEA và vào **File > Project Structure**
+2. Trong phần **Project Settings > Project**:
+   - Chọn Project SDK: 11 (hoặc cao hơn)
+   - Project language level: 11
+3. Nhấn **Apply** và **OK**
+
+### Cấu hình Maven
+
+1. Vào **File > Settings > Build, Execution, Deployment > Build Tools > Maven**
+2. Đảm bảo Maven home path được cấu hình đúng
+3. Trong phần **Maven > Runner**, bạn có thể thêm JVM Options nếu cần
+
+### Cấu hình Spring Boot Run
+
+1. Chọn **Run > Edit Configurations**
+2. Nhấn **+** (Add New Configuration) và chọn **Spring Boot**
+3. Cấu hình như sau:
+   - Name: BeautySalonApplication
+   - Main class: com.beautysalon.BeautySalonApplication
+   - VM Options: -Dspring.profiles.active=dev (nếu cần)
+   - Working directory: $MODULE_WORKING_DIR$
+   - Use classpath of module: beauty-salon-api
+4. Nhấn **Apply** và **OK**
+
+### Debugging trong IntelliJ IDEA
+
+1. Đặt breakpoints bằng cách nhấp chuột vào lề trái của editor
+2. Chạy ứng dụng ở chế độ Debug bằng nút Debug hoặc **Run > Debug**
+3. Khi ứng dụng dừng tại breakpoint, sử dụng các công cụ debug để kiểm tra biến, tiếp tục thực thi, v.v.
+
 ## Thông tin cấu hình khác
-
-### Debug trong IntelliJ IDEA
-
-1. Đặt breakpoints trong code bằng cách nhấp chuột vào lề bên trái của editor
-2. Chạy ứng dụng trong chế độ Debug bằng cách chọn "Debug 'BeautySalonApplication'" thay vì "Run 'BeautySalonApplication'"
-3. Khi ứng dụng dừng tại breakpoint, bạn có thể xem biến, thực hiện các bước tiếp theo, v.v.
 
 ### Kiểm tra Logs
 
