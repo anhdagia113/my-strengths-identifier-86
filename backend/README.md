@@ -1,18 +1,18 @@
 
 # Beauty Salon API Server
 
-This is the backend API server for the Beauty Salon application, built with Spring Boot and Java 17.
+Đây là máy chủ API backend cho ứng dụng Beauty Salon, được xây dựng bằng Spring Boot và Java 11.
 
-## Technology Stack
+## Công nghệ sử dụng
 
-- Java 17
-- Spring Boot 3.2.x
-- Spring Security with JWT
+- Java 11 (LTS)
+- Spring Boot 2.7.x
+- Spring Security với JWT
 - Spring Data JPA
-- PostgreSQL
+- MySQL
 - Maven
 
-## Project Structure
+## Cấu trúc dự án
 
 ```
 backend/
@@ -21,101 +21,138 @@ backend/
 │   │   ├── java/
 │   │   │   └── com/
 │   │   │       └── beautysalon/
-│   │   │           ├── config/           # Configuration classes
+│   │   │           ├── config/           # Các lớp cấu hình
 │   │   │           ├── controller/       # REST controllers
 │   │   │           ├── dto/              # Data Transfer Objects
-│   │   │           ├── exception/        # Custom exceptions and handlers
-│   │   │           ├── model/            # Entity classes
+│   │   │           ├── exception/        # Xử lý ngoại lệ
+│   │   │           ├── model/            # Các entity
 │   │   │           ├── repository/       # Data repositories
-│   │   │           ├── security/         # Security configuration
-│   │   │           ├── service/          # Business logic services
-│   │   │           ├── util/             # Utility classes
-│   │   │           └── BeautySalonApplication.java  # Main application class
+│   │   │           ├── security/         # Cấu hình bảo mật
+│   │   │           ├── service/          # Các service xử lý business logic
+│   │   │           ├── util/             # Các lớp tiện ích
+│   │   │           └── BeautySalonApplication.java  # Lớp chính
 │   │   └── resources/
-│   │       ├── application.properties    # Application properties
-│   │       ├── application-dev.properties # Development environment properties
-│   │       ├── application-prod.properties # Production environment properties
+│   │       ├── application.properties    # Cấu hình ứng dụng
+│   │       ├── application-dev.properties # Cấu hình môi trường phát triển
+│   │       ├── application-prod.properties # Cấu hình môi trường sản xuất
 │   │       └── db/
-│   │           └── migration/            # Database migration scripts
-│   └── test/                             # Test classes
-├── pom.xml                               # Maven configuration
-└── README.md                             # Project documentation
+│   │           └── migration/            # Scripts khởi tạo database
+│   └── test/                             # Các lớp test
+├── pom.xml                               # Cấu hình Maven
+└── README.md                             # Tài liệu dự án
 ```
 
-## Getting Started
+## Bắt đầu
 
-### Prerequisites
+### Yêu cầu
 
-- Java Development Kit (JDK) 17
-- Maven 3.8+
-- PostgreSQL 13+
+- Java Development Kit (JDK) 11
+- Maven 3.6+
+- MySQL 8.0+
 
-### Setup
+### Cài đặt và chạy bằng IntelliJ IDEA
 
-1. Clone the repository:
+1. Clone repository:
    ```bash
-   git clone <repository-url>
+   git clone <đường-dẫn-repository>
    cd backend
    ```
 
-2. Create a PostgreSQL database:
+2. Mở dự án trong IntelliJ IDEA:
+   - Chọn File > Open
+   - Chọn thư mục `backend`
+   - Chọn "Open as Project"
+
+3. Cấu hình database MySQL:
    ```sql
    CREATE DATABASE beautysalon;
    ```
 
-3. Configure database connection in `application-dev.properties`.
+4. Cấu hình kết nối database trong `application.properties` hoặc `application-dev.properties`.
 
-4. Build and run the application:
-   ```bash
-   ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-   ```
+5. Chạy ứng dụng từ IntelliJ IDEA:
+   - Tìm class `BeautySalonApplication.java`
+   - Nhấp chuột phải và chọn "Run 'BeautySalonApplication'"
 
-The API will be available at `http://localhost:8080/api`.
+API sẽ khả dụng tại `http://localhost:8080/api`.
 
-## API Documentation
+### Cấu hình Spring Boot trong IntelliJ IDEA
 
-Once the application is running, you can access the Swagger UI documentation at `http://localhost:8080/swagger-ui.html`.
+1. **Cấu hình JDK**:
+   - File > Project Structure > Project
+   - Đảm bảo Project SDK được đặt là Java 11
 
-## Development
+2. **Tùy chỉnh cấu hình chạy**:
+   - Run > Edit Configurations
+   - Chọn cấu hình BeautySalonApplication
+   - Trong tab "Configuration":
+     - Thêm VM options: `-Dspring.profiles.active=dev`
+     - Đặt Environment variables nếu cần
 
-### Code Style
+3. **Debugging**:
+   - Đặt breakpoints bằng cách nhấp vào lề trái của editor
+   - Chạy ứng dụng ở chế độ debug bằng cách chọn biểu tượng bug hoặc Run > Debug
 
-This project follows the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html).
+## Tài liệu API
 
-### Database Migrations
+Khi ứng dụng đang chạy, bạn có thể truy cập tài liệu Swagger UI tại `http://localhost:8080/swagger-ui.html`.
 
-We use Flyway for database migrations. Migration scripts should be placed in `src/main/resources/db/migration` with the naming convention `V{version}__{description}.sql`.
+## Phát triển
 
-### Testing
+### Quy tắc code
 
-Run tests with:
+Dự án này tuân theo [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html).
+
+### Kiểm thử
+
+Chạy kiểm thử với:
 ```bash
 ./mvnw test
 ```
 
-## Deployment
+Hoặc chạy thông qua IntelliJ IDEA bằng cách nhấp chuột phải vào thư mục `src/test` và chọn "Run Tests".
 
-For production deployment, build the application with:
+## Triển khai
+
+Để triển khai sản phẩm, build ứng dụng với:
 ```bash
 ./mvnw clean package -Pprod
 ```
 
-The JAR file will be generated in the `target` directory.
+File JAR sẽ được tạo trong thư mục `target`.
 
-## Security
+## Bảo mật
 
-- Authentication is handled via JWT tokens
-- Role-based access control is implemented
-- CORS is configured for the frontend application
+- Xác thực được xử lý thông qua token JWT
+- Kiểm soát truy cập dựa trên vai trò
+- CORS được cấu hình cho ứng dụng frontend
 
-## Environment Variables
+## Biến môi trường
 
-The following environment variables can be set:
+Các biến môi trường sau có thể được cài đặt:
 
-- `SPRING_PROFILES_ACTIVE`: Set to `dev`, `test`, or `prod`
-- `DATABASE_URL`: JDBC URL for the database
-- `DATABASE_USERNAME`: Database username
-- `DATABASE_PASSWORD`: Database password
-- `JWT_SECRET`: Secret key for JWT token signing
-- `JWT_EXPIRATION`: Token expiration time in milliseconds
+- `SPRING_PROFILES_ACTIVE`: Đặt là `dev`, `test` hoặc `prod`
+- `DATABASE_URL`: JDBC URL cho database
+- `DATABASE_USERNAME`: Tên người dùng database
+- `DATABASE_PASSWORD`: Mật khẩu database
+- `JWT_SECRET`: Khóa bí mật cho việc ký JWT token
+- `JWT_EXPIRATION`: Thời gian hết hạn token tính bằng mili giây
 
+## Xử lý sự cố trong IntelliJ IDEA
+
+1. **Không tìm thấy classes khi build**:
+   - File > Invalidate Caches / Restart
+   - Chọn "Invalidate and Restart"
+
+2. **Lỗi Maven**:
+   - Mở Maven tool window (View > Tool Windows > Maven)
+   - Nhấp "Reimport All Maven Projects"
+
+3. **Lỗi kết nối database**:
+   - Kiểm tra cấu hình trong application.properties
+   - Kiểm tra MySQL đang chạy
+   - Thử kết nối trực tiếp từ cửa sổ Database trong IntelliJ
+
+4. **Kiểm tra logs**:
+   - Xem logs trong cửa sổ Run của IntelliJ
+   - Kiểm tra file logs nếu được cấu hình trong application.properties

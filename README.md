@@ -7,12 +7,12 @@ Hệ thống quản lý dịch vụ làm đẹp và spa hoàn chỉnh, bao gồm
 
 Dự án được tổ chức thành hai phần chính:
 
-- `be/`: Backend (Spring Boot)
-- `fe/`: Frontend (React)
+- `backend/`: Backend (Spring Boot)
+- `src/`: Frontend (React)
 
 ## Yêu cầu hệ thống
 
-- Java 17
+- Java 11 (LTS)
 - Node.js 18+ và npm/yarn
 - MySQL 8.0
 
@@ -33,36 +33,37 @@ Dự án được tổ chức thành hai phần chính:
    FLUSH PRIVILEGES;
    ```
 
-### Bước 2: Cài đặt và chạy Backend (Spring Boot)
+### Bước 2: Cài đặt và chạy Backend (Spring Boot) bằng IntelliJ IDEA
 
-1. Di chuyển vào thư mục backend:
-   ```bash
-   cd be
-   ```
+1. Mở IntelliJ IDEA và chọn "Open" hoặc "Import Project".
+2. Chọn thư mục `backend` của dự án và mở nó.
+3. IntelliJ sẽ tự động nhận diện đây là một dự án Maven và bắt đầu tải các dependencies.
 
-2. Cấu hình kết nối MySQL trong file `src/main/resources/application.properties`:
-   ```properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/beautysalon?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-   spring.datasource.username=beautysalon_user
-   spring.datasource.password=password
-   ```
+4. Cấu hình kết nối MySQL:
+   - Mở file `backend/src/main/resources/application.properties`
+   - Điều chỉnh các thông số kết nối database nếu cần:
+     ```properties
+     spring.datasource.url=jdbc:mysql://localhost:3306/beautysalon?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+     spring.datasource.username=beautysalon_user
+     spring.datasource.password=password
+     ```
 
-3. Chạy ứng dụng Spring Boot:
-   ```bash
-   ./mvnw spring-boot:run
-   ```
-   Hoặc sử dụng Maven trực tiếp:
-   ```bash
-   mvn spring-boot:run
-   ```
+5. Chạy ứng dụng Spring Boot trong IntelliJ:
+   - Tìm class `BeautySalonApplication.java` trong cấu trúc dự án
+   - Nhấp chuột phải vào file và chọn "Run 'BeautySalonApplication'"
+   - Hoặc sử dụng nút Run (biểu tượng play) trong thanh công cụ
 
-4. API server sẽ khởi chạy tại `http://localhost:8080`
+6. Để cấu hình biến môi trường hoặc VM options:
+   - Chọn "Edit Configurations..." từ menu dropdown Run
+   - Thêm các tham số VM nếu cần (ví dụ: `-Dspring.profiles.active=dev`)
+
+7. API server sẽ khởi chạy tại `http://localhost:8080`
 
 ### Bước 3: Cài đặt và chạy Frontend (React)
 
-1. Di chuyển vào thư mục frontend:
+1. Mở terminal và di chuyển đến thư mục gốc của dự án:
    ```bash
-   cd fe
+   cd đường_dẫn_đến_dự_án
    ```
 
 2. Cài đặt các dependencies:
@@ -82,71 +83,51 @@ Dự án được tổ chức thành hai phần chính:
 
 5. Ứng dụng sẽ khởi chạy tại `http://localhost:5173`
 
-### Bước 4: Khởi tạo dữ liệu ban đầu
+### Bước 4: Sử dụng ứng dụng
 
-1. Đăng nhập vào hệ thống bằng tài khoản admin mặc định:
-   - Email: admin@beautysalon.com
-   - Password: admin
+1. Truy cập ứng dụng frontend tại `http://localhost:5173`
+2. Đăng nhập vào hệ thống (thông tin đăng nhập sẽ được cấu hình trong dữ liệu khởi tạo)
 
-2. Tạo dữ liệu mẫu cho hệ thống bằng cách:
-   - Truy cập vào trang Quản lý cơ sở dữ liệu (trong mục Admin)
-   - Chọn "Tạo dữ liệu mẫu" hoặc "Nhập dữ liệu" để tải lên dữ liệu từ file
+## Thông tin cấu hình khác
 
-## Nhập dữ liệu vào hệ thống
+### Debug trong IntelliJ IDEA
 
-Có hai cách để nhập dữ liệu vào hệ thống:
+1. Đặt breakpoints trong code bằng cách nhấp chuột vào lề bên trái của editor
+2. Chạy ứng dụng trong chế độ Debug bằng cách chọn "Debug 'BeautySalonApplication'" thay vì "Run 'BeautySalonApplication'"
+3. Khi ứng dụng dừng tại breakpoint, bạn có thể xem biến, thực hiện các bước tiếp theo, v.v.
 
-### Cách 1: Sử dụng tính năng tạo dữ liệu mẫu
+### Kiểm tra Logs
 
-1. Đăng nhập với tài khoản admin
-2. Truy cập vào mục Quản lý cơ sở dữ liệu
-3. Chọn "Tạo dữ liệu mẫu"
+- Logs của backend sẽ hiển thị trong cửa sổ Run của IntelliJ IDEA
+- Có thể cấu hình log level trong `application.properties`:
+  ```properties
+  logging.level.root=INFO
+  logging.level.com.beautysalon=DEBUG
+  ```
 
-### Cách 2: Nhập dữ liệu từ file JSON
+### Tùy chọn cấu hình theo môi trường
 
-1. Chuẩn bị file JSON với định dạng như mẫu trong `sample-data.json` 
-2. Đăng nhập với tài khoản admin
-3. Truy cập vào mục Quản lý cơ sở dữ liệu
-4. Chọn tab "Nhập dữ liệu"
-5. Dán nội dung JSON hoặc sử dụng nút "Lấy dữ liệu mẫu"
-6. Nhấn "Nhập dữ liệu"
+IntelliJ IDEA cho phép bạn tạo và chuyển đổi giữa các cấu hình chạy khác nhau:
 
-## Tài khoản mặc định
+1. Chọn "Edit Configurations..." từ menu dropdown Run
+2. Tạo nhiều cấu hình với các tham số khác nhau cho các môi trường dev, test, prod
+3. Chọn cấu hình tương ứng trước khi chạy ứng dụng
 
-- Admin:
-  - Email: admin@beautysalon.com
-  - Password: admin
+## Xử lý sự cố
 
-## Các tính năng chính
+### Backend không khởi động
 
-- Quản lý người dùng và phân quyền
-- Đặt lịch dịch vụ
-- Quản lý dịch vụ và danh mục
-- Quản lý chuyên viên
-- Quản lý thanh toán và hóa đơn
-- Blog và nội dung
+- Kiểm tra cổng 8080 đã được sử dụng chưa: `netstat -ano | findstr 8080` (Windows) hoặc `lsof -i:8080` (Mac/Linux)
+- Kiểm tra kết nối đến MySQL: Đảm bảo MySQL đang chạy và thông tin kết nối chính xác
+- Kiểm tra logs trong IntelliJ để xem chi tiết lỗi
 
-## Quản lý cơ sở dữ liệu
+### Frontend không kết nối được với Backend
 
-Ứng dụng hỗ trợ các chức năng quản lý cơ sở dữ liệu sau:
-
-1. **Tạo dữ liệu mẫu**: Tạo tự động các bản ghi mẫu cho các bảng trong cơ sở dữ liệu.
-2. **Xóa toàn bộ dữ liệu**: Xóa tất cả dữ liệu hiện có trong cơ sở dữ liệu.
-3. **Xuất dữ liệu**: Xuất toàn bộ dữ liệu ra định dạng JSON để sao lưu.
-4. **Nhập dữ liệu**: Nhập dữ liệu từ định dạng JSON vào cơ sở dữ liệu.
-
-## Đóng góp và phát triển
-
-Để đóng góp vào dự án, vui lòng:
-
-1. Fork repository
-2. Tạo branch mới (`git checkout -b feature/amazing-feature`)
-3. Commit các thay đổi (`git commit -m 'Add some amazing feature'`)
-4. Push lên branch (`git push origin feature/amazing-feature`)
-5. Tạo Pull Request
+- Kiểm tra CORS đã được cấu hình đúng trong backend
+- Kiểm tra biến môi trường `VITE_API_URL` đã được đặt chính xác
 
 ## Lưu ý về bảo mật
 
-- Đây là ứng dụng mẫu, không nên sử dụng trực tiếp trong môi trường sản xuất mà không có đánh giá bảo mật.
-- Hãy đổi mật khẩu admin và các thông tin nhạy cảm trước khi triển khai.
-- Cập nhật các dependencies thường xuyên để đảm bảo bảo mật.
+- Đổi mật khẩu mặc định trước khi triển khai
+- Sử dụng HTTPS trong môi trường sản xuất
+- Không lưu trữ thông tin nhạy cảm trong mã nguồn
