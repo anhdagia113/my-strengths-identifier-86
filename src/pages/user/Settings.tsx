@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { 
   Avatar, 
   AvatarFallback, 
@@ -32,7 +33,10 @@ import {
   Lock,
   CreditCard,
   Trash2,
-  Plus
+  Plus,
+  Moon,
+  Sun,
+  Monitor
 } from "lucide-react";
 
 // Sample payment methods
@@ -82,6 +86,9 @@ const UserSettings = () => {
     expires: "",
     cvv: "",
   });
+  
+  const [theme, setTheme] = useState("system");
+  const [language, setLanguage] = useState("vi");
 
   const handleProfileChange = (key: keyof typeof profileData, value: string) => {
     setProfileData((prev) => ({
@@ -180,6 +187,29 @@ const UserSettings = () => {
     
     setPaymentMethods(updatedMethods);
     toast.success("Phương thức thanh toán mặc định đã được cập nhật");
+  };
+  
+  const handleThemeChange = (value: string) => {
+    setTheme(value);
+    toast.success(`Đã chuyển sang chế độ ${value === 'light' ? 'sáng' : value === 'dark' ? 'tối' : 'hệ thống'}`);
+    
+    if (value === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else if (value === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      // Check system preference
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  };
+  
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value);
+    toast.success(`Đã chuyển sang ${value === 'vi' ? 'Tiếng Việt' : 'Tiếng Anh'}`);
   };
 
   return (
@@ -324,7 +354,7 @@ const UserSettings = () => {
                             {method.name} {method.expires && `• Hết hạn: ${method.expires}`}
                           </p>
                           {method.isDefault && (
-                            <Badge className="mt-1">Mặc định</Badge>
+                            <Badge variant="outline" className="mt-1">Mặc định</Badge>
                           )}
                         </div>
                       </div>
@@ -571,13 +601,28 @@ const UserSettings = () => {
                   <Label className="text-base">Chế độ hiển thị</Label>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  <Button variant="outline" className="justify-start">
+                  <Button 
+                    variant={theme === "light" ? "default" : "outline"} 
+                    className="justify-start"
+                    onClick={() => handleThemeChange("light")}
+                  >
+                    <Sun className="mr-2 h-4 w-4" />
                     Sáng
                   </Button>
-                  <Button variant="outline" className="justify-start">
+                  <Button 
+                    variant={theme === "dark" ? "default" : "outline"} 
+                    className="justify-start"
+                    onClick={() => handleThemeChange("dark")}
+                  >
+                    <Moon className="mr-2 h-4 w-4" />
                     Tối
                   </Button>
-                  <Button variant="default" className="justify-start">
+                  <Button 
+                    variant={theme === "system" ? "default" : "outline"} 
+                    className="justify-start"
+                    onClick={() => handleThemeChange("system")}
+                  >
+                    <Monitor className="mr-2 h-4 w-4" />
                     Hệ thống
                   </Button>
                 </div>
@@ -588,10 +633,18 @@ const UserSettings = () => {
                   <Label className="text-base">Ngôn ngữ</Label>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  <Button variant="default" className="justify-start">
+                  <Button 
+                    variant={language === "vi" ? "default" : "outline"} 
+                    className="justify-start"
+                    onClick={() => handleLanguageChange("vi")}
+                  >
                     Tiếng Việt
                   </Button>
-                  <Button variant="outline" className="justify-start">
+                  <Button 
+                    variant={language === "en" ? "default" : "outline"} 
+                    className="justify-start"
+                    onClick={() => handleLanguageChange("en")}
+                  >
                     Tiếng Anh
                   </Button>
                 </div>

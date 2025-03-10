@@ -17,6 +17,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -32,6 +33,11 @@ const Navbar = () => {
         console.error("Failed to parse user data", error);
       }
     }
+    
+    // Check theme setting from localStorage
+    const savedTheme = localStorage.getItem("theme") as 'light' | 'dark' | 'system' || 'system';
+    setTheme(savedTheme);
+    applyTheme(savedTheme);
   }, []);
   
   const toggleMenu = () => {
@@ -45,11 +51,27 @@ const Navbar = () => {
     setUser(null);
     navigate("/");
   };
+  
+  const applyTheme = (theme: 'light' | 'dark' | 'system') => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else if (theme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      // Check system preference
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+    localStorage.setItem("theme", theme);
+  };
 
   const isAdmin = user?.role === "admin" || user?.role === "staff";
 
   return (
-    <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 shadow-sm">
+    <nav className="fixed top-0 w-full bg-background/90 backdrop-blur-md z-50 shadow-sm">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <Logo />

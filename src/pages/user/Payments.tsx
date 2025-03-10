@@ -26,6 +26,9 @@ import {
   Receipt,
   AlertCircle,
   Plus,
+  Trash2,
+  CreditCard as CreditCardIcon,
+  Bank,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -44,7 +47,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 // Sample data for payment methods and transactions
-const paymentMethods: PaymentMethod[] = [
+const initialPaymentMethods: PaymentMethod[] = [
   {
     id: "1",
     type: "credit_card",
@@ -106,9 +109,18 @@ const transactions: Transaction[] = [
 
 const UserPayments = () => {
   const [activeTab, setActiveTab] = useState("payment_methods");
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(initialPaymentMethods);
   const [isAddPaymentDialogOpen, setIsAddPaymentDialogOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionDetailOpen, setIsTransactionDetailOpen] = useState(false);
+  
+  const [newPayment, setNewPayment] = useState({
+    type: "credit_card",
+    cardNumber: "",
+    cardName: "",
+    expiry: "",
+    cvv: "",
+  });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -130,17 +142,76 @@ const UserPayments = () => {
     setIsTransactionDetailOpen(true);
   };
 
+  const handleNewPaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewPayment({
+      ...newPayment,
+      [name]: value
+    });
+  };
+
   const handleAddPaymentMethod = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Thêm phương thức thanh toán thành công");
+    
+    // Validate form
+    if (!newPayment.cardNumber || !newPayment.cardName || !newPayment.expiry) {
+      toast.error("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
+    
+    // Create masked card number
+    const last4 = newPayment.cardNumber.slice(-4);
+    const cardType = newPayment.type === "credit_card" ? "Visa" : "Bank";
+    const maskedNumber = `${cardType} ****${last4}`;
+    
+    // Create new payment method
+    const newMethod: PaymentMethod = {
+      id: (paymentMethods.length + 1).toString(),
+      type: newPayment.type,
+      name: maskedNumber,
+      expiry: newPayment.expiry,
+      isDefault: paymentMethods.length === 0
+    };
+    
+    // Add to list
+    setPaymentMethods([...paymentMethods, newMethod]);
+    
+    // Reset form and close dialog
+    setNewPayment({
+      type: "credit_card",
+      cardNumber: "",
+      cardName: "",
+      expiry: "",
+      cvv: "",
+    });
+    
     setIsAddPaymentDialogOpen(false);
+    toast.success("Thêm phương thức thanh toán thành công");
   };
 
   const handleSetDefaultPaymentMethod = (id: string) => {
+    const updatedMethods = paymentMethods.map(method => ({
+      ...method,
+      isDefault: method.id === id
+    }));
+    
+    setPaymentMethods(updatedMethods);
     toast.success("Đã đặt làm phương thức thanh toán mặc định");
   };
 
   const handleDeletePaymentMethod = (id: string) => {
+    // Check if it's the default method
+    const isDefault = paymentMethods.find(m => m.id === id)?.isDefault;
+    
+    // Filter out the method
+    const updatedMethods = paymentMethods.filter(m => m.id !== id);
+    
+    // If we removed the default method and there are other methods, make the first one default
+    if (isDefault && updatedMethods.length > 0) {
+      updatedMethods[0].isDefault = true;
+    }
+    
+    setPaymentMethods(updatedMethods);
     toast.success("Đã xóa phương thức thanh toán");
   };
 
@@ -202,7 +273,7 @@ const UserPayments = () => {
                           <span className="font-medium">{method.name}</span>
                         </div>
                         {method.isDefault && (
-                          <Badge className="bg-background text-foreground">
+                          <Badge variant="outline" className="bg-background text-foreground">
                             Mặc định
                           </Badge>
                         )}
@@ -226,26 +297,39 @@ const UserPayments = () => {
                       <Button 
                         size="sm" 
                         variant="ghost" 
-                        className="text-red-500"
+                        className="text-destructive"
                         onClick={() => handleDeletePaymentMethod(method.id)}
                       >
-                        Xóa
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </Card>
                 ))}
+                
+                {paymentMethods.length === 0 && (
+                  <div className="col-span-2 text-center py-8 border rounded-lg">
+                    <CreditCard className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-muted-foreground mb-4">Bạn chưa có phương thức thanh toán nào</p>
+                    <Button onClick={() => setIsAddPaymentDialogOpen(true)}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Thêm phương thức thanh toán
+                    </Button>
+                  </div>
+                )}
               </div>
 
-              <div className="mt-6">
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => setIsAddPaymentDialogOpen(true)}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Thêm phương thức thanh toán mới
-                </Button>
-              </div>
+              {paymentMethods.length > 0 && (
+                <div className="mt-6">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => setIsAddPaymentDialogOpen(true)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Thêm phương thức thanh toán mới
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -466,24 +550,76 @@ const UserPayments = () => {
           </DialogHeader>
           <form onSubmit={handleAddPaymentMethod} className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="card-number">Số thẻ</Label>
-              <Input id="card-number" placeholder="1234 5678 9012 3456" />
+              <Label>Loại phương thức</Label>
+              <div className="flex space-x-2">
+                <Button 
+                  type="button"
+                  variant={newPayment.type === "credit_card" ? "default" : "outline"}
+                  onClick={() => setNewPayment({...newPayment, type: "credit_card"})}
+                  className="flex-1"
+                >
+                  <CreditCardIcon className="mr-2 h-4 w-4" />
+                  Thẻ tín dụng
+                </Button>
+                <Button 
+                  type="button"
+                  variant={newPayment.type === "bank" ? "default" : "outline"}
+                  onClick={() => setNewPayment({...newPayment, type: "bank"})}
+                  className="flex-1"
+                >
+                  <Bank className="mr-2 h-4 w-4" />
+                  Tài khoản ngân hàng
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="card-number">
+                {newPayment.type === "credit_card" ? "Số thẻ" : "Số tài khoản"}
+              </Label>
+              <Input 
+                id="card-number"
+                name="cardNumber"
+                value={newPayment.cardNumber}
+                onChange={handleNewPaymentChange}
+                placeholder={newPayment.type === "credit_card" ? "1234 5678 9012 3456" : "0123456789"}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="card-name">Tên chủ thẻ</Label>
+              <Input 
+                id="card-name"
+                name="cardName"
+                value={newPayment.cardName}
+                onChange={handleNewPaymentChange}
+                placeholder="NGUYEN VAN A"
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="expiry">Ngày hết hạn</Label>
-                <Input id="expiry" placeholder="MM/YY" />
+                <Input 
+                  id="expiry"
+                  name="expiry"
+                  value={newPayment.expiry}
+                  onChange={handleNewPaymentChange}
+                  placeholder="MM/YY"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cvv">Mã bảo mật (CVV)</Label>
-                <Input id="cvv" placeholder="123" />
+                <Input 
+                  id="cvv"
+                  name="cvv"
+                  value={newPayment.cvv}
+                  onChange={handleNewPaymentChange}
+                  placeholder="123"
+                  type="password"
+                  maxLength={3}
+                />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="card-name">Tên chủ thẻ</Label>
-              <Input id="card-name" placeholder="NGUYEN VAN A" />
-            </div>
             <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsAddPaymentDialogOpen(false)}>Hủy</Button>
               <Button type="submit">Thêm phương thức thanh toán</Button>
             </DialogFooter>
           </form>
