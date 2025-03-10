@@ -1,158 +1,101 @@
-
-import { useState, useEffect } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription 
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Search, Calendar, FileDown, FileText } from "lucide-react";
+import { format } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Download, Search, Filter } from "lucide-react";
-import { format, isWithinInterval, parseISO } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useReactToPrint } from 'react-to-print';
 import * as XLSX from 'xlsx';
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
-const transactionsData = [
+interface Transaction {
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  status: "completed" | "pending" | "failed";
+}
+
+const initialTransactions: Transaction[] = [
   {
-    id: "TX12345",
-    date: "2023-06-15T09:30:00",
-    customer: "Nguyễn Văn A",
-    service: "Chăm sóc da cơ bản",
-    specialist: "Trần Thị B",
-    amount: 450000,
+    id: "1",
+    date: "2024-01-01",
+    description: "Dịch vụ Chăm sóc da mặt",
+    amount: 500000,
     status: "completed",
-    paymentMethod: "Thẻ tín dụng",
   },
   {
-    id: "TX12346",
-    date: "2023-06-15T14:00:00",
-    customer: "Lê Văn C",
-    service: "Trị mụn chuyên sâu",
-    specialist: "Phạm Văn D",
-    amount: 650000,
+    id: "2",
+    date: "2024-01-05",
+    description: "Gội đầu và massage",
+    amount: 200000,
     status: "completed",
-    paymentMethod: "Tiền mặt",
   },
   {
-    id: "TX12347",
-    date: "2023-06-16T10:15:00",
-    customer: "Hoàng Thị E",
-    service: "Trẻ hóa da",
-    specialist: "Nguyễn Thị F",
-    amount: 850000,
-    status: "completed",
-    paymentMethod: "Chuyển khoản",
-  },
-  {
-    id: "TX12348",
-    date: "2023-06-16T16:30:00",
-    customer: "Đỗ Văn G",
-    service: "Massage mặt",
-    specialist: "Lý Thị H",
-    amount: 350000,
+    id: "3",
+    date: "2024-01-10",
+    description: "Uốn tóc",
+    amount: 800000,
     status: "pending",
-    paymentMethod: "Thẻ tín dụng",
   },
   {
-    id: "TX12349",
-    date: "2023-06-17T11:00:00",
-    customer: "Trịnh Văn I",
-    service: "Tẩy trang chuyên sâu",
-    specialist: "Bùi Thị K",
-    amount: 250000,
+    id: "4",
+    date: "2024-01-15",
+    description: "Nhuộm tóc",
+    amount: 700000,
     status: "completed",
-    paymentMethod: "Tiền mặt",
   },
   {
-    id: "TX12350",
-    date: "2023-06-17T13:45:00",
-    customer: "Lương Thị L",
-    service: "Trị nám",
-    specialist: "Vũ Văn M",
-    amount: 750000,
+    id: "5",
+    date: "2024-01-20",
+    description: "Cắt tóc",
+    amount: 150000,
+    status: "completed",
+  },
+  {
+    id: "6",
+    date: "2024-01-25",
+    description: "Làm móng",
+    amount: 300000,
     status: "failed",
-    paymentMethod: "Thẻ tín dụng",
-  },
-  {
-    id: "TX12351",
-    date: "2023-06-18T09:00:00",
-    customer: "Mai Văn N",
-    service: "Chăm sóc da cơ bản",
-    specialist: "Đinh Thị O",
-    amount: 450000,
-    status: "completed",
-    paymentMethod: "Chuyển khoản",
-  },
-  {
-    id: "TX12352",
-    date: "2023-06-18T15:30:00",
-    customer: "Cao Thị P",
-    service: "Trị mụn chuyên sâu",
-    specialist: "Đặng Văn Q",
-    amount: 650000,
-    status: "refunded",
-    paymentMethod: "Thẻ tín dụng",
-  },
-  {
-    id: "TX12353",
-    date: "2023-06-19T10:30:00",
-    customer: "Lâm Văn R",
-    service: "Trẻ hóa da",
-    specialist: "Hà Thị S",
-    amount: 850000,
-    status: "completed",
-    paymentMethod: "Tiền mặt",
-  },
-  {
-    id: "TX12354",
-    date: "2023-06-19T14:15:00",
-    customer: "Trương Văn T",
-    service: "Massage mặt",
-    specialist: "Ngô Thị U",
-    amount: 350000,
-    status: "pending",
-    paymentMethod: "Chuyển khoản",
   },
 ];
 
-const Transactions = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [currentPage] = useState(1);
+const AdminTransactions = () => {
+  const [transactions, setTransactions] = useState<Transaction[]>(
+    initialTransactions
+  );
+  const [filteredTransactions, setFilteredTransactions] = useState<
+    Transaction[]
+  >(transactions);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "completed" | "pending" | "failed"
+  >("all");
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
@@ -160,271 +103,218 @@ const Transactions = () => {
     from: undefined,
     to: undefined,
   });
-  const [filteredTransactions, setFilteredTransactions] = useState(transactionsData);
-  const itemsPerPage = 10;
 
-  // Apply filters whenever any filter changes
-  useEffect(() => {
-    // Apply filters
-    const filtered = transactionsData.filter((transaction) => {
-      // Apply text search
-      const matchesSearch =
-        searchTerm === "" ||
-        transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.service.toLowerCase().includes(searchTerm.toLowerCase());
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
 
-      // Apply status filter
-      const matchesStatus =
-        statusFilter === "all" || transaction.status === statusFilter;
+    if (query.trim() === "") {
+      setFilteredTransactions(transactions);
+    } else {
+      const filtered = transactions.filter((transaction) =>
+        transaction.description.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredTransactions(filtered);
+    }
+  };
 
-      // Apply date filter
-      let matchesDate = true;
-      if (dateRange.from && dateRange.to) {
-        const transactionDate = parseISO(transaction.date);
-        matchesDate = isWithinInterval(transactionDate, {
-          start: dateRange.from,
-          end: dateRange.to,
-        });
-      }
+  const handleStatusFilterChange = (value: "all" | "completed" | "pending" | "failed") => {
+    setStatusFilter(value);
 
-      return matchesSearch && matchesStatus && matchesDate;
-    });
+    let filtered = [...transactions];
+
+    if (value !== "all") {
+      filtered = filtered.filter((transaction) => transaction.status === value);
+    }
+
+    if (searchQuery.trim() !== "") {
+      filtered = filtered.filter((transaction) =>
+        transaction.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (dateRange.from) {
+      filtered = filtered.filter(transaction => {
+        const transactionDate = new Date(transaction.date);
+        const afterStartDate = dateRange.from ? transactionDate >= dateRange.from : true;
+        const beforeEndDate = dateRange.to ? transactionDate <= dateRange.to : true;
+        return afterStartDate && beforeEndDate;
+      });
+    }
 
     setFilteredTransactions(filtered);
-  }, [searchTerm, statusFilter, dateRange]);
+  };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <Badge className="bg-green-500">Hoàn thành</Badge>;
-      case "pending":
-        return <Badge className="bg-yellow-500">Đang xử lý</Badge>;
-      case "failed":
-        return <Badge className="bg-red-500">Thất bại</Badge>;
-      case "refunded":
-        return <Badge className="bg-purple-500">Hoàn tiền</Badge>;
-      default:
-        return <Badge>Không xác định</Badge>;
+  const handleDateRangeChange = (range: { from: Date | undefined; to: Date | undefined }) => {
+    setDateRange(range);
+    
+    if (range.from) {
+      let filtered = [...transactions];
+      
+      filtered = filtered.filter(transaction => {
+        const transactionDate = new Date(transaction.date);
+        
+        const afterStartDate = range.from ? transactionDate >= range.from : true;
+        
+        const beforeEndDate = range.to ? transactionDate <= range.to : true;
+        
+        return afterStartDate && beforeEndDate;
+      });
+      
+      if (statusFilter !== "all") {
+        filtered = filtered.filter((transaction) => transaction.status === statusFilter);
+      }
+  
+      if (searchQuery.trim() !== "") {
+        filtered = filtered.filter((transaction) =>
+          transaction.description.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+      
+      setFilteredTransactions(filtered);
+    } else {
+      setFilteredTransactions(transactions);
     }
   };
 
-  // Calculate pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredTransactions.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
-
-  // Function to export transactions to Excel
-  const exportToExcel = () => {
-    try {
-      // Format the data for Excel
-      const excelData = filteredTransactions.map(transaction => ({
-        'ID Giao dịch': transaction.id,
-        'Ngày': format(new Date(transaction.date), "dd/MM/yyyy HH:mm"),
-        'Khách hàng': transaction.customer,
-        'Dịch vụ': transaction.service,
-        'Chuyên viên': transaction.specialist,
-        'Số tiền': transaction.amount,
-        'Trạng thái': transaction.status === 'completed' ? 'Hoàn thành' : 
-                    transaction.status === 'pending' ? 'Đang xử lý' : 
-                    transaction.status === 'failed' ? 'Thất bại' : 
-                    transaction.status === 'refunded' ? 'Hoàn tiền' : 'Không xác định',
-        'Phương thức': transaction.paymentMethod
-      }));
-
-      // Create a worksheet
-      const worksheet = XLSX.utils.json_to_sheet(excelData);
-
-      // Create a workbook
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Giao dịch");
-
-      // Generate Excel file and download
-      XLSX.writeFile(workbook, "bao-cao-giao-dich.xlsx");
-      toast.success("Xuất Excel thành công!");
-    } catch (error) {
-      console.error("Error exporting to Excel:", error);
-      toast.error("Có lỗi khi xuất Excel!");
-    }
+  const handleExportExcel = () => {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(filteredTransactions);
+    XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+    XLSX.writeFile(wb, "transactions.xlsx");
+    toast.success("Đã xuất file Excel thành công!");
   };
 
-  // Apply date filter
-  const handleDateRangeApply = () => {
-    if (dateRange.from && dateRange.to) {
-      toast.success(`Đã lọc giao dịch từ ${format(dateRange.from, "dd/MM/yyyy")} đến ${format(dateRange.to, "dd/MM/yyyy")}`);
-    }
-  };
+  const handleExportCSV = () => {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += [
+      Object.keys(filteredTransactions[0]).join(","),
+      ...filteredTransactions.map((item) => Object.values(item).join(",")),
+    ].join("\r\n");
 
-  // Clear date filter
-  const clearDateFilter = () => {
-    setDateRange({ from: undefined, to: undefined });
-    toast.success("Đã xóa bộ lọc ngày");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "transactions.csv");
+    document.body.appendChild(link);
+    link.click();
+    toast.success("Đã xuất file CSV thành công!");
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Quản lý giao dịch</h1>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={exportToExcel}>
-            <Download className="mr-2 h-4 w-4" />
-            Xuất Excel
-          </Button>
-          
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateRange.from && dateRange.to ? (
-                  <>
-                    {format(dateRange.from, "dd/MM/yyyy")} -{" "}
-                    {format(dateRange.to, "dd/MM/yyyy")}
-                  </>
-                ) : (
-                  <span>Lọc theo ngày</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                initialFocus
-                mode="range"
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={2}
-                className={cn("p-3 pointer-events-auto")}
-              />
-              <div className="flex items-center p-3 border-t border-border">
-                {dateRange.from && dateRange.to && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={clearDateFilter}
-                    className="mr-auto"
-                  >
-                    Xóa bộ lọc
-                  </Button>
-                )}
-                <Button size="sm" onClick={handleDateRangeApply}>
-                  Áp dụng
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Giao dịch</h1>
+        <p className="text-muted-foreground">
+          Quản lý tất cả các giao dịch của bạn ở đây
+        </p>
       </div>
-
       <Card>
         <CardHeader>
-          <CardTitle>Giao dịch thanh toán</CardTitle>
-          <CardDescription>Quản lý tất cả các giao dịch thanh toán trong hệ thống</CardDescription>
+          <CardTitle>Danh sách giao dịch</CardTitle>
+          <CardDescription>
+            Xem và quản lý các giao dịch của bạn
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="mb-6 flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
+          <div className="flex flex-col sm:flex-row gap-4 mb-4">
+            <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Tìm kiếm theo ID, khách hàng, dịch vụ..."
+                placeholder="Tìm kiếm..."
                 className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchQuery}
+                onChange={handleSearchChange}
               />
             </div>
-            <div className="w-full md:w-[180px]">
-              <Select
-                value={statusFilter}
-                onValueChange={setStatusFilter}
-              >
-                <SelectTrigger>
-                  <div className="flex items-center">
-                    <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Lọc theo trạng thái" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả</SelectItem>
-                  <SelectItem value="completed">Hoàn thành</SelectItem>
-                  <SelectItem value="pending">Đang xử lý</SelectItem>
-                  <SelectItem value="failed">Thất bại</SelectItem>
-                  <SelectItem value="refunded">Hoàn tiền</SelectItem>
-                </SelectContent>
-              </Select>
+            <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                <SelectItem value="completed">Đã hoàn thành</SelectItem>
+                <SelectItem value="pending">Đang xử lý</SelectItem>
+                <SelectItem value="failed">Thất bại</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex flex-col w-full sm:w-auto">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRange.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "dd/MM/yyyy")} -{" "}
+                          {format(dateRange.to, "dd/MM/yyyy")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "dd/MM/yyyy")
+                      )
+                    ) : (
+                      <span>Chọn khoảng thời gian</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={new Date()}
+                    selected={dateRange}
+                    onSelect={handleDateRangeChange}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
+            <Button onClick={handleExportExcel}>
+              <FileDown className="mr-2 h-4 w-4" />
+              Xuất Excel
+            </Button>
+            <Button onClick={handleExportCSV}>
+              <FileText className="mr-2 h-4 w-4" />
+              Xuất CSV
+            </Button>
           </div>
-
-          <div className="rounded-md border overflow-hidden">
+          <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID Giao dịch</TableHead>
                   <TableHead>Ngày</TableHead>
-                  <TableHead>Khách hàng</TableHead>
-                  <TableHead>Dịch vụ</TableHead>
-                  <TableHead>Chuyên viên</TableHead>
+                  <TableHead>Mô tả</TableHead>
                   <TableHead>Số tiền</TableHead>
                   <TableHead>Trạng thái</TableHead>
-                  <TableHead>Phương thức</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {currentItems.length > 0 ? (
-                  currentItems.map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell className="font-medium">
-                        {transaction.id}
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(transaction.date), "dd/MM/yyyy HH:mm")}
-                      </TableCell>
-                      <TableCell>{transaction.customer}</TableCell>
-                      <TableCell>{transaction.service}</TableCell>
-                      <TableCell>{transaction.specialist}</TableCell>
-                      <TableCell>
-                        {new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(transaction.amount)}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(transaction.status)}</TableCell>
-                      <TableCell>{transaction.paymentMethod}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-6">
-                      Không tìm thấy giao dịch nào
+                {filteredTransactions.map((transaction) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell>{format(new Date(transaction.date), "dd/MM/yyyy")}</TableCell>
+                    <TableCell>{transaction.description}</TableCell>
+                    <TableCell>{transaction.amount.toLocaleString()} VNĐ</TableCell>
+                    <TableCell>
+                      {transaction.status === "completed" ? (
+                        <span className="text-green-500">Đã hoàn thành</span>
+                      ) : transaction.status === "pending" ? (
+                        <span className="text-yellow-500">Đang xử lý</span>
+                      ) : (
+                        <span className="text-red-500">Thất bại</span>
+                      )}
                     </TableCell>
                   </TableRow>
-                )}
+                ))}
               </TableBody>
             </Table>
           </div>
-
-          <Pagination className="mt-4">
-            <PaginationContent>
-              <PaginationPrevious href="#" />
-              <PaginationItem>
-                <PaginationLink href="#" isActive>
-                  1
-                </PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">2</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">3</PaginationLink>
-              </PaginationItem>
-              <PaginationEllipsis />
-              <PaginationNext href="#" />
-            </PaginationContent>
-          </Pagination>
         </CardContent>
       </Card>
     </div>
   );
 };
 
-export default Transactions;
+export default AdminTransactions;

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -211,12 +212,20 @@ const BlogDetail = () => {
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-bold mb-4">Bài viết không tồn tại</h1>
         <p className="mb-8">Bài viết bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
-        <Button asChild>
-          <Link to="/blog">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Quay lại trang Blog
-          </Link>
-        </Button>
+        <div className="flex justify-center gap-4">
+          <Button asChild>
+            <Link to="/blog">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Quay lại trang Blog
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/">
+              <Home className="mr-2 h-4 w-4" />
+              Trang chủ
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -224,19 +233,20 @@ const BlogDetail = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <Button variant="ghost" asChild>
-          <Link to="/blog">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Quay lại trang Blog
-          </Link>
-        </Button>
-        
-        <Button variant="outline" size="sm" asChild>
-          <Link to="/">
-            <Home className="mr-2 h-4 w-4" />
-            Trang chủ
-          </Link>
-        </Button>
+        <div className="space-x-2">
+          <Button variant="outline" asChild>
+            <Link to="/blog">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Quay lại Blog
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/">
+              <Home className="mr-2 h-4 w-4" />
+              Trang chủ
+            </Link>
+          </Button>
+        </div>
       </div>
       
       <div className="max-w-4xl mx-auto">

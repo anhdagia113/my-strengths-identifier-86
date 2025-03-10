@@ -315,14 +315,6 @@ const Profile = () => {
                         <option value="en">Tiếng Anh</option>
                       </select>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="theme">Chế độ</Label>
-                      <select id="theme" className="w-full p-2 border rounded-md" defaultValue="light">
-                        <option value="light">Sáng</option>
-                        <option value="dark">Tối</option>
-                        <option value="system">Theo hệ thống</option>
-                      </select>
-                    </div>
                     <div className="flex items-center space-x-2">
                       <input type="checkbox" id="notification-email" defaultChecked />
                       <Label htmlFor="notification-email">Nhận thông báo qua email</Label>
