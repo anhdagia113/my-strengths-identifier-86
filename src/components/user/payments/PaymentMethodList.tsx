@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
-import { CreditCard, Plus } from "lucide-react";
+import { CreditCard, Plus, RefreshCw } from "lucide-react";
 import { PaymentMethod } from "@/types/service";
 import PaymentMethodCard from './PaymentMethodCard';
 
@@ -11,14 +11,27 @@ interface PaymentMethodListProps {
   onSetDefault: (id: string) => void;
   onDelete: (id: string) => void;
   onAddNew: () => void;
+  isLoading?: boolean;
 }
 
 const PaymentMethodList = ({ 
   paymentMethods, 
   onSetDefault, 
   onDelete, 
-  onAddNew 
+  onAddNew,
+  isLoading = false
 }: PaymentMethodListProps) => {
+  if (isLoading) {
+    return (
+      <CardContent>
+        <div className="text-center py-8">
+          <RefreshCw className="h-8 w-8 mx-auto text-muted-foreground mb-2 animate-spin" />
+          <p className="text-muted-foreground">Đang tải phương thức thanh toán...</p>
+        </div>
+      </CardContent>
+    );
+  }
+
   return (
     <CardContent>
       <div className="grid gap-4 md:grid-cols-2">

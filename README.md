@@ -1,69 +1,73 @@
-# Welcome to your Lovable project
 
-## Project info
+# Beauty Salon Management System
 
-**URL**: https://lovable.dev/projects/170c060a-5049-4ef2-a785-2381024af336
+Hệ thống quản lý dịch vụ làm đẹp và spa hoàn chỉnh, bao gồm quản lý khách hàng, đặt lịch, dịch vụ, chuyên viên và thanh toán.
 
-## How can I edit this code?
+## Yêu cầu hệ thống
 
-There are several ways of editing your application.
+- Java 17
+- Node.js 18+ và npm/yarn
+- MySQL 8.0
 
-**Use Lovable**
+## Cài đặt và chạy
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/170c060a-5049-4ef2-a785-2381024af336) and start prompting.
+### Backend (Spring Boot)
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Clone repository và di chuyển vào thư mục backend:
+   ```
+   cd backend
+   ```
 
-**Use your preferred IDE**
+2. Cấu hình cơ sở dữ liệu MySQL:
+   - Đảm bảo MySQL đang chạy
+   - Tạo cơ sở dữ liệu (database sẽ được tạo tự động theo cấu hình)
+   - Cập nhật tệp `application.properties` nếu cần thiết với thông tin kết nối MySQL của bạn
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+3. Chạy ứng dụng Spring Boot:
+   ```
+   ./mvnw spring-boot:run
+   ```
+   Hoặc sử dụng Maven trực tiếp:
+   ```
+   mvn spring-boot:run
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+4. API server sẽ khởi chạy tại `http://localhost:8080`
 
-Follow these steps:
+### Frontend (React)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. Di chuyển vào thư mục gốc của dự án và cài đặt các dependencies:
+   ```
+   npm install
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Chạy ứng dụng frontend:
+   ```
+   npm run dev
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. Ứng dụng sẽ khởi chạy tại `http://localhost:5173`
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+## Tài khoản mặc định
 
-**Edit a file directly in GitHub**
+- Admin:
+  - Email: admin@beautysalon.com
+  - Password: admin
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Cấu trúc dự án
 
-**Use GitHub Codespaces**
+- `/backend`: Mã nguồn của API server (Spring Boot)
+- `/src`: Mã nguồn của giao diện người dùng (React)
+  - `/api`: Các service và models cho API
+  - `/components`: Components React
+  - `/pages`: Các trang của ứng dụng
+  - `/types`: Định nghĩa kiểu TypeScript
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Các tính năng chính
 
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/170c060a-5049-4ef2-a785-2381024af336) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+- Quản lý người dùng và phân quyền
+- Đặt lịch dịch vụ
+- Quản lý dịch vụ và danh mục
+- Quản lý chuyên viên
+- Quản lý thanh toán và hóa đơn
+- Blog và nội dung
